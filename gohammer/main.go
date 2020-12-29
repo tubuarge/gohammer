@@ -1,10 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
+	"./config"
 	"./rpc"
 
 	log "github.com/sirupsen/logrus"
@@ -14,26 +17,38 @@ const (
 	node1RPCAddress = "http://localhost:22000"
 )
 
-func isNodeUp() {
+var cfg config.Config
 
-}
+func readConfig(cfg *config.Config, configFileName string) {
+	configFileName, _ = filepath.Abs(configFileName)
+	log.Infof("Loading config: %v", configFileName)
 
-func sendRPCCall() {
-
+	configFile, err := os.Open(configFileName)
+	if err != nil {
+		log.Fatal("File error: ", err.Error())
+	}
+	defer configFile.Close()
+	jsonParser := json.NewDecoder(configFile)
+	if err := jsonParser.Decode(&cfg); err != nil {
+		log.Fatal("Config error: ", err.Error())
+	}
 }
 
 func main() {
+	readConfig(&cfg, "config.json")
 	rpcClient := rpc.NewRPCClient()
 
-	isNodeUp, err := rpcClient.IsNodeUp(node1RPCAddress)
-	if err != nil {
-		log.Error(err)
-	}
+	for _, node := range cfg.Nodes {
+		isNodeUp, err := rpcClient.IsNodeUp(node.URL)
+		if err != nil {
+			log.Error(err)
+		}
 
-	if isNodeUp {
-		log.Infof("'%s' node is 'UP'.", node1RPCAddress)
-	} else {
-		log.Infof("'%s' node is 'NOT UP'", node1RPCAddress)
+		if isNodeUp {
+			log.Infof("'%s' is 'UP'.", node.Name)
+		} else {
+			log.Infof("'%s' is 'NOT UP'", node.Name)
+		}
 	}
 
 	sc := make(chan os.Signal, 1)

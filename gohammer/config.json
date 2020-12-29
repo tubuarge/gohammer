@@ -1,0 +1,19 @@
+{
+	"nodes": [{
+			"name": "Node1",
+			"url": "http://localhost:22000"
+		},
+		{
+			"name": "Node2",
+			"url": "http://localhost:22001"
+		},
+		{
+			"name": "Node3",
+			"url": "http://localhost:22002"
+		},
+		{
+			"name": "Node4",
+			"url": "http://localhost:22003"
+		}
+	]
+}
