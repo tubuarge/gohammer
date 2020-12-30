@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -9,12 +10,11 @@ import (
 
 	"./config"
 	"./rpc"
+	"./token"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	node1RPCAddress = "http://localhost:22000"
 )
 
 var cfg config.Config
@@ -50,6 +50,23 @@ func main() {
 			log.Infof("'%s' is 'NOT UP'", node.Name)
 		}
 	}
+
+	conn, err := ethclient.Dial(cfg.Nodes[0].URL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	newToken, err := token.NewToken(common.HexToAddress("0xed9d02e382b34818e88b88a309c7fe71e65f419d"), conn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	name, err := newToken.Name(nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Token name:", name)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
