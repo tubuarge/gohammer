@@ -4,12 +4,12 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"encoding/json"
-	"fmt"
 	"math/big"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"./config"
 	"./rpc"
@@ -20,6 +20,11 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 )
+
+type ClientStruct struct {
+	client *ethclient.Client
+	node   config.NodeConfig
+}
 
 var cfg config.Config
 
@@ -38,9 +43,67 @@ func readConfig(cfg *config.Config, configFileName string) {
 	}
 }
 
+func deploy100(clients []*ClientStruct) {
+	start := time.Now()
+
+	count := 0
+	for count <= 100 {
+		for _, client := range clients {
+			log.Infof("deploying contract on %s", client.node.Name)
+			privateKey, err := crypto.HexToECDSA(client.node.Cipher)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			publicKey := privateKey.Public()
+			publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+			if !ok {
+				log.Fatal("error casting public key to ECDSA")
+			}
+
+			fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+
+			nonce, err := client.client.PendingNonceAt(context.Background(), fromAddress)
+			if err != nil {
+				log.Fatal(err)
+			}
+			gasPrice, err := client.client.SuggestGasPrice(context.Background())
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			auth := bind.NewKeyedTransactor(privateKey)
+			auth.Nonce = big.NewInt(int64(nonce))
+			auth.Value = big.NewInt(0)     // in wei
+			auth.GasLimit = uint64(300000) // in units
+			auth.GasPrice = gasPrice
+
+			input := "1.0"
+			address, tx, instance, err := store.DeployStore(auth, client.client, input)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			log.Info("Address: ", address.Hex())
+			log.Info("Tx Hash: ", tx.Hash().Hex())
+
+			_ = instance
+		}
+		count++
+	}
+	elapsed := time.Since(start)
+	log.Infof("Deploying 100 contracts took: %s", elapsed)
+	return
+
+}
+
+func deploy() {}
+
 func main() {
 	readConfig(&cfg, "config.json")
 	rpcClient := rpc.NewRPCClient()
+
+	var clients []*ClientStruct
 
 	for _, node := range cfg.Nodes {
 		isNodeUp, err := rpcClient.IsNodeUp(node.URL)
@@ -50,54 +113,23 @@ func main() {
 
 		if isNodeUp {
 			log.Infof("'%s' is 'UP'.", node.Name)
+			conn, err := ethclient.Dial(node.URL)
+			if err != nil {
+				log.Error(err)
+				continue
+			}
+			clientStruct := &ClientStruct{
+				client: conn,
+				node:   node,
+			}
+			clients = append(clients, clientStruct)
+			log.Info(clients)
 		} else {
 			log.Infof("'%s' is 'NOT UP'", node.Name)
 		}
 	}
 
-	conn, err := ethclient.Dial(cfg.Nodes[0].URL)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	privateKey, err := crypto.HexToECDSA("4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		log.Fatal("error casting public key to ECDSA")
-	}
-
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-
-	nonce, err := conn.PendingNonceAt(context.Background(), fromAddress)
-	if err != nil {
-		log.Fatal(err)
-	}
-	gasPrice, err := conn.SuggestGasPrice(context.Background())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	auth := bind.NewKeyedTransactor(privateKey)
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = big.NewInt(0)     // in wei
-	auth.GasLimit = uint64(300000) // in units
-	auth.GasPrice = gasPrice
-
-	input := "1.0"
-	address, tx, instance, err := store.DeployStore(auth, conn, input)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(address.Hex())   // 0x147B8eb97fD247D06C4006D269c90C1908Fb5D54
-	fmt.Println(tx.Hash().Hex()) // 0xdae8ba5444eefdc99f4d45cd0c4f24056cba6a02cefbf78066ef9f4188ff7dc0
-
-	_ = instance
+	deploy100(clients)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)

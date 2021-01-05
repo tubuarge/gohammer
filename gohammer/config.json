@@ -1,19 +1,23 @@
 {
 	"nodes": [{
 			"name": "Node1",
-			"url": "http://localhost:22000"
+			"url": "http://localhost:22000",
+			"cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377"
 		},
 		{
 			"name": "Node2",
-			"url": "http://localhost:22001"
+			"url": "http://localhost:22001",
+			"cipher": "01d409941ce57b83a18597058033657182ffb10ae15d7d0906b8a8c04c8d1e3a"
 		},
 		{
 			"name": "Node3",
-			"url": "http://localhost:22002"
+			"url": "http://localhost:22002",
+			"cipher": "6b2c72c6793f3da8185e36536e02f574805e41c18f551f24b58346ef4ecf3640"
 		},
 		{
 			"name": "Node4",
-			"url": "http://localhost:22003"
+			"url": "http://localhost:22003",
+			"cipher": "d160a630a39be3ff35556055406d8ff2a635f0535fe298d62ccc812d8f7b3bd5"
 		}
 	]
 }
