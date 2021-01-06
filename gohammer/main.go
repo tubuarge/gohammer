@@ -43,53 +43,62 @@ func readConfig(cfg *config.Config, configFileName string) {
 	}
 }
 
-func deploy100(clients []*ClientStruct) {
+func deployContract(client *ClientStruct) {
+	privateKey, err := crypto.HexToECDSA(client.node.Cipher)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		log.Fatal("error casting public key to ECDSA")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+
+	nonce, err := client.client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		log.Fatal(err)
+	}
+	gasPrice, err := client.client.SuggestGasPrice(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	auth := bind.NewKeyedTransactor(privateKey)
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)     // in wei
+	auth.GasLimit = uint64(300000) // in units
+	auth.GasPrice = gasPrice
+
+	input := "1.0"
+	address, tx, instance, err := store.DeployStore(auth, client.client, input)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Info("Address: ", address.Hex())
+	log.Info("Tx Hash: ", tx.Hash().Hex())
+
+	_ = instance
+}
+
+func deployOnOneNode(client *ClientStruct) {
 	start := time.Now()
 
-	count := 0
-	for count <= 100 {
+	for count := 0; i < 100; i++ {
+		deployContract(client)
+	}
+}
+
+func deployOnAllNodes(clients []*ClientStruct) {
+	start := time.Now()
+
+	for count := 0; count < 100; count++ {
 		for _, client := range clients {
-			log.Infof("deploying contract on %s", client.node.Name)
-			privateKey, err := crypto.HexToECDSA(client.node.Cipher)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			publicKey := privateKey.Public()
-			publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-			if !ok {
-				log.Fatal("error casting public key to ECDSA")
-			}
-
-			fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-
-			nonce, err := client.client.PendingNonceAt(context.Background(), fromAddress)
-			if err != nil {
-				log.Fatal(err)
-			}
-			gasPrice, err := client.client.SuggestGasPrice(context.Background())
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			auth := bind.NewKeyedTransactor(privateKey)
-			auth.Nonce = big.NewInt(int64(nonce))
-			auth.Value = big.NewInt(0)     // in wei
-			auth.GasLimit = uint64(300000) // in units
-			auth.GasPrice = gasPrice
-
-			input := "1.0"
-			address, tx, instance, err := store.DeployStore(auth, client.client, input)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			log.Info("Address: ", address.Hex())
-			log.Info("Tx Hash: ", tx.Hash().Hex())
-
-			_ = instance
+			deployContract(client)
 		}
-		count++
 	}
 	elapsed := time.Since(start)
 	log.Infof("Deploying 100 contracts took: %s", elapsed)
@@ -129,7 +138,8 @@ func main() {
 		}
 	}
 
-	deploy100(clients)
+	//deployOnAllNodes(clients)
+	deployOnOneNode(clients[0])
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
