@@ -28,7 +28,7 @@ var (
 )
 
 // TokenABI is the input ABI used to generate the binding from.
-const TokenABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"storedData\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"x\",\"type\":\"uint256\"}],\"name\":\"set\",\"outputs\":[],\"payable\":false,\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"name\":\"retVal\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"function\"},{\"inputs\":[{\"name\":\"initVal\",\"type\":\"uint256\"}],\"payable\":false,\"type\":\"constructor\"}];"
+const TokenABI = "[{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_from\",\"type\":\"address\"},{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[],\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"},{\"name\":\"_extraData\",\"type\":\"bytes\"}],\"name\":\"approveAndCall\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"},{\"name\":\"\",\"type\":\"address\"}],\"name\":\"spentAllowance\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"address\"},{\"name\":\"\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"type\":\"function\"},{\"inputs\":[{\"name\":\"initialSupply\",\"type\":\"uint256\"},{\"name\":\"tokenName\",\"type\":\"string\"},{\"name\":\"decimalUnits\",\"type\":\"uint8\"},{\"name\":\"tokenSymbol\",\"type\":\"string\"}],\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"}]"
 
 // Token is an auto generated Go binding around an Ethereum contract.
 type Token struct {
@@ -172,75 +172,374 @@ func (_Token *TokenTransactorRaw) Transact(opts *bind.TransactOpts, method strin
 	return _Token.Contract.contract.Transact(opts, method, params...)
 }
 
-// Get is a free data retrieval call binding the contract method 0x6d4ce63c.
+// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
 //
-// Solidity: function get() constant returns(uint256 retVal)
-func (_Token *TokenCaller) Get(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function allowance(address , address ) constant returns(uint256)
+func (_Token *TokenCaller) Allowance(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Token.contract.Call(opts, out, "get")
+	err := _Token.contract.Call(opts, out, "allowance", arg0, arg1)
 	return *ret0, err
 }
 
-// Get is a free data retrieval call binding the contract method 0x6d4ce63c.
+// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
 //
-// Solidity: function get() constant returns(uint256 retVal)
-func (_Token *TokenSession) Get() (*big.Int, error) {
-	return _Token.Contract.Get(&_Token.CallOpts)
+// Solidity: function allowance(address , address ) constant returns(uint256)
+func (_Token *TokenSession) Allowance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+	return _Token.Contract.Allowance(&_Token.CallOpts, arg0, arg1)
 }
 
-// Get is a free data retrieval call binding the contract method 0x6d4ce63c.
+// Allowance is a free data retrieval call binding the contract method 0xdd62ed3e.
 //
-// Solidity: function get() constant returns(uint256 retVal)
-func (_Token *TokenCallerSession) Get() (*big.Int, error) {
-	return _Token.Contract.Get(&_Token.CallOpts)
+// Solidity: function allowance(address , address ) constant returns(uint256)
+func (_Token *TokenCallerSession) Allowance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+	return _Token.Contract.Allowance(&_Token.CallOpts, arg0, arg1)
 }
 
-// StoredData is a free data retrieval call binding the contract method 0x2a1afcd9.
+// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
 //
-// Solidity: function storedData() constant returns(uint256)
-func (_Token *TokenCaller) StoredData(opts *bind.CallOpts) (*big.Int, error) {
+// Solidity: function balanceOf(address ) constant returns(uint256)
+func (_Token *TokenCaller) BalanceOf(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
 	var (
 		ret0 = new(*big.Int)
 	)
 	out := ret0
-	err := _Token.contract.Call(opts, out, "storedData")
+	err := _Token.contract.Call(opts, out, "balanceOf", arg0)
 	return *ret0, err
 }
 
-// StoredData is a free data retrieval call binding the contract method 0x2a1afcd9.
+// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
 //
-// Solidity: function storedData() constant returns(uint256)
-func (_Token *TokenSession) StoredData() (*big.Int, error) {
-	return _Token.Contract.StoredData(&_Token.CallOpts)
+// Solidity: function balanceOf(address ) constant returns(uint256)
+func (_Token *TokenSession) BalanceOf(arg0 common.Address) (*big.Int, error) {
+	return _Token.Contract.BalanceOf(&_Token.CallOpts, arg0)
 }
 
-// StoredData is a free data retrieval call binding the contract method 0x2a1afcd9.
+// BalanceOf is a free data retrieval call binding the contract method 0x70a08231.
 //
-// Solidity: function storedData() constant returns(uint256)
-func (_Token *TokenCallerSession) StoredData() (*big.Int, error) {
-	return _Token.Contract.StoredData(&_Token.CallOpts)
+// Solidity: function balanceOf(address ) constant returns(uint256)
+func (_Token *TokenCallerSession) BalanceOf(arg0 common.Address) (*big.Int, error) {
+	return _Token.Contract.BalanceOf(&_Token.CallOpts, arg0)
 }
 
-// Set is a paid mutator transaction binding the contract method 0x60fe47b1.
+// Decimals is a free data retrieval call binding the contract method 0x313ce567.
 //
-// Solidity: function set(uint256 x) returns()
-func (_Token *TokenTransactor) Set(opts *bind.TransactOpts, x *big.Int) (*types.Transaction, error) {
-	return _Token.contract.Transact(opts, "set", x)
+// Solidity: function decimals() constant returns(uint8)
+func (_Token *TokenCaller) Decimals(opts *bind.CallOpts) (uint8, error) {
+	var (
+		ret0 = new(uint8)
+	)
+	out := ret0
+	err := _Token.contract.Call(opts, out, "decimals")
+	return *ret0, err
 }
 
-// Set is a paid mutator transaction binding the contract method 0x60fe47b1.
+// Decimals is a free data retrieval call binding the contract method 0x313ce567.
 //
-// Solidity: function set(uint256 x) returns()
-func (_Token *TokenSession) Set(x *big.Int) (*types.Transaction, error) {
-	return _Token.Contract.Set(&_Token.TransactOpts, x)
+// Solidity: function decimals() constant returns(uint8)
+func (_Token *TokenSession) Decimals() (uint8, error) {
+	return _Token.Contract.Decimals(&_Token.CallOpts)
 }
 
-// Set is a paid mutator transaction binding the contract method 0x60fe47b1.
+// Decimals is a free data retrieval call binding the contract method 0x313ce567.
 //
-// Solidity: function set(uint256 x) returns()
-func (_Token *TokenTransactorSession) Set(x *big.Int) (*types.Transaction, error) {
-	return _Token.Contract.Set(&_Token.TransactOpts, x)
+// Solidity: function decimals() constant returns(uint8)
+func (_Token *TokenCallerSession) Decimals() (uint8, error) {
+	return _Token.Contract.Decimals(&_Token.CallOpts)
+}
+
+// Name is a free data retrieval call binding the contract method 0x06fdde03.
+//
+// Solidity: function name() constant returns(string)
+func (_Token *TokenCaller) Name(opts *bind.CallOpts) (string, error) {
+	var (
+		ret0 = new(string)
+	)
+	out := ret0
+	err := _Token.contract.Call(opts, out, "name")
+	return *ret0, err
+}
+
+// Name is a free data retrieval call binding the contract method 0x06fdde03.
+//
+// Solidity: function name() constant returns(string)
+func (_Token *TokenSession) Name() (string, error) {
+	return _Token.Contract.Name(&_Token.CallOpts)
+}
+
+// Name is a free data retrieval call binding the contract method 0x06fdde03.
+//
+// Solidity: function name() constant returns(string)
+func (_Token *TokenCallerSession) Name() (string, error) {
+	return _Token.Contract.Name(&_Token.CallOpts)
+}
+
+// SpentAllowance is a free data retrieval call binding the contract method 0xdc3080f2.
+//
+// Solidity: function spentAllowance(address , address ) constant returns(uint256)
+func (_Token *TokenCaller) SpentAllowance(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+	var (
+		ret0 = new(*big.Int)
+	)
+	out := ret0
+	err := _Token.contract.Call(opts, out, "spentAllowance", arg0, arg1)
+	return *ret0, err
+}
+
+// SpentAllowance is a free data retrieval call binding the contract method 0xdc3080f2.
+//
+// Solidity: function spentAllowance(address , address ) constant returns(uint256)
+func (_Token *TokenSession) SpentAllowance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+	return _Token.Contract.SpentAllowance(&_Token.CallOpts, arg0, arg1)
+}
+
+// SpentAllowance is a free data retrieval call binding the contract method 0xdc3080f2.
+//
+// Solidity: function spentAllowance(address , address ) constant returns(uint256)
+func (_Token *TokenCallerSession) SpentAllowance(arg0 common.Address, arg1 common.Address) (*big.Int, error) {
+	return _Token.Contract.SpentAllowance(&_Token.CallOpts, arg0, arg1)
+}
+
+// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
+//
+// Solidity: function symbol() constant returns(string)
+func (_Token *TokenCaller) Symbol(opts *bind.CallOpts) (string, error) {
+	var (
+		ret0 = new(string)
+	)
+	out := ret0
+	err := _Token.contract.Call(opts, out, "symbol")
+	return *ret0, err
+}
+
+// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
+//
+// Solidity: function symbol() constant returns(string)
+func (_Token *TokenSession) Symbol() (string, error) {
+	return _Token.Contract.Symbol(&_Token.CallOpts)
+}
+
+// Symbol is a free data retrieval call binding the contract method 0x95d89b41.
+//
+// Solidity: function symbol() constant returns(string)
+func (_Token *TokenCallerSession) Symbol() (string, error) {
+	return _Token.Contract.Symbol(&_Token.CallOpts)
+}
+
+// ApproveAndCall is a paid mutator transaction binding the contract method 0xcae9ca51.
+//
+// Solidity: function approveAndCall(address _spender, uint256 _value, bytes _extraData) returns(bool success)
+func (_Token *TokenTransactor) ApproveAndCall(opts *bind.TransactOpts, _spender common.Address, _value *big.Int, _extraData []byte) (*types.Transaction, error) {
+	return _Token.contract.Transact(opts, "approveAndCall", _spender, _value, _extraData)
+}
+
+// ApproveAndCall is a paid mutator transaction binding the contract method 0xcae9ca51.
+//
+// Solidity: function approveAndCall(address _spender, uint256 _value, bytes _extraData) returns(bool success)
+func (_Token *TokenSession) ApproveAndCall(_spender common.Address, _value *big.Int, _extraData []byte) (*types.Transaction, error) {
+	return _Token.Contract.ApproveAndCall(&_Token.TransactOpts, _spender, _value, _extraData)
+}
+
+// ApproveAndCall is a paid mutator transaction binding the contract method 0xcae9ca51.
+//
+// Solidity: function approveAndCall(address _spender, uint256 _value, bytes _extraData) returns(bool success)
+func (_Token *TokenTransactorSession) ApproveAndCall(_spender common.Address, _value *big.Int, _extraData []byte) (*types.Transaction, error) {
+	return _Token.Contract.ApproveAndCall(&_Token.TransactOpts, _spender, _value, _extraData)
+}
+
+// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
+//
+// Solidity: function transfer(address _to, uint256 _value) returns()
+func (_Token *TokenTransactor) Transfer(opts *bind.TransactOpts, _to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _Token.contract.Transact(opts, "transfer", _to, _value)
+}
+
+// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
+//
+// Solidity: function transfer(address _to, uint256 _value) returns()
+func (_Token *TokenSession) Transfer(_to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _Token.Contract.Transfer(&_Token.TransactOpts, _to, _value)
+}
+
+// Transfer is a paid mutator transaction binding the contract method 0xa9059cbb.
+//
+// Solidity: function transfer(address _to, uint256 _value) returns()
+func (_Token *TokenTransactorSession) Transfer(_to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _Token.Contract.Transfer(&_Token.TransactOpts, _to, _value)
+}
+
+// TransferFrom is a paid mutator transaction binding the contract method 0x23b872dd.
+//
+// Solidity: function transferFrom(address _from, address _to, uint256 _value) returns(bool success)
+func (_Token *TokenTransactor) TransferFrom(opts *bind.TransactOpts, _from common.Address, _to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _Token.contract.Transact(opts, "transferFrom", _from, _to, _value)
+}
+
+// TransferFrom is a paid mutator transaction binding the contract method 0x23b872dd.
+//
+// Solidity: function transferFrom(address _from, address _to, uint256 _value) returns(bool success)
+func (_Token *TokenSession) TransferFrom(_from common.Address, _to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _Token.Contract.TransferFrom(&_Token.TransactOpts, _from, _to, _value)
+}
+
+// TransferFrom is a paid mutator transaction binding the contract method 0x23b872dd.
+//
+// Solidity: function transferFrom(address _from, address _to, uint256 _value) returns(bool success)
+func (_Token *TokenTransactorSession) TransferFrom(_from common.Address, _to common.Address, _value *big.Int) (*types.Transaction, error) {
+	return _Token.Contract.TransferFrom(&_Token.TransactOpts, _from, _to, _value)
+}
+
+// TokenTransferIterator is returned from FilterTransfer and is used to iterate over the raw logs and unpacked data for Transfer events raised by the Token contract.
+type TokenTransferIterator struct {
+	Event *TokenTransfer // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *TokenTransferIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(TokenTransfer)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(TokenTransfer)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *TokenTransferIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *TokenTransferIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// TokenTransfer represents a Transfer event raised by the Token contract.
+type TokenTransfer struct {
+	From  common.Address
+	To    common.Address
+	Value *big.Int
+	Raw   types.Log // Blockchain specific contextual infos
+}
+
+// FilterTransfer is a free log retrieval operation binding the contract event 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef.
+//
+// Solidity: event Transfer(address indexed from, address indexed to, uint256 value)
+func (_Token *TokenFilterer) FilterTransfer(opts *bind.FilterOpts, from []common.Address, to []common.Address) (*TokenTransferIterator, error) {
+
+	var fromRule []interface{}
+	for _, fromItem := range from {
+		fromRule = append(fromRule, fromItem)
+	}
+	var toRule []interface{}
+	for _, toItem := range to {
+		toRule = append(toRule, toItem)
+	}
+
+	logs, sub, err := _Token.contract.FilterLogs(opts, "Transfer", fromRule, toRule)
+	if err != nil {
+		return nil, err
+	}
+	return &TokenTransferIterator{contract: _Token.contract, event: "Transfer", logs: logs, sub: sub}, nil
+}
+
+// WatchTransfer is a free log subscription operation binding the contract event 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef.
+//
+// Solidity: event Transfer(address indexed from, address indexed to, uint256 value)
+func (_Token *TokenFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *TokenTransfer, from []common.Address, to []common.Address) (event.Subscription, error) {
+
+	var fromRule []interface{}
+	for _, fromItem := range from {
+		fromRule = append(fromRule, fromItem)
+	}
+	var toRule []interface{}
+	for _, toItem := range to {
+		toRule = append(toRule, toItem)
+	}
+
+	logs, sub, err := _Token.contract.WatchLogs(opts, "Transfer", fromRule, toRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(TokenTransfer)
+				if err := _Token.contract.UnpackLog(event, "Transfer", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseTransfer is a log parse operation binding the contract event 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef.
+//
+// Solidity: event Transfer(address indexed from, address indexed to, uint256 value)
+func (_Token *TokenFilterer) ParseTransfer(log types.Log) (*TokenTransfer, error) {
+	event := new(TokenTransfer)
+	if err := _Token.contract.UnpackLog(event, "Transfer", log); err != nil {
+		return nil, err
+	}
+	return event, nil
 }
