@@ -84,18 +84,22 @@ func deployContract(client *ClientStruct) {
 	_ = instance
 }
 
-func deployOnOneNode(client *ClientStruct) {
+func deployOnOneNode(client *ClientStruct, deployCount int) {
 	start := time.Now()
 
-	for count := 0; i < 100; i++ {
+	for count := 0; count < deployCount; count++ {
 		deployContract(client)
 	}
+
+	elapsed := time.Since(start)
+	log.Infof("Deploying %d contracts took: %s", deployCount, elapsed)
+	return
 }
 
-func deployOnAllNodes(clients []*ClientStruct) {
+func deployOnAllNodes(clients []*ClientStruct, deployCount int) {
 	start := time.Now()
 
-	for count := 0; count < 100; count++ {
+	for count := 0; count < deployCount; count++ {
 		for _, client := range clients {
 			deployContract(client)
 		}
@@ -139,7 +143,14 @@ func main() {
 	}
 
 	//deployOnAllNodes(clients)
-	deployOnOneNode(clients[0])
+	deployOnOneNode(clients[0], 100)
+	time.Sleep(1 * time.Minute)
+
+	deployOnOneNode(clients[0], 500)
+	time.Sleep(1 * time.Minute)
+
+	deployOnOneNode(clients[0], 1000)
+	time.Sleep(1 * time.Minute)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
