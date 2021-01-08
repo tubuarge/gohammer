@@ -19,6 +19,11 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/urfave/cli.v1"
+)
+
+var (
+	app = cli.NewApp()
 )
 
 type ClientStruct struct {
