@@ -11,9 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"./config"
-	"./rpc"
-	"./store"
+	"github.com/tubuarge/GoHammer/config"
+	"github.com/tubuarge/GoHammer/rpc"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -78,7 +77,7 @@ func deployContract(client *ClientStruct) {
 	auth.GasPrice = gasPrice
 
 	input := "1.0"
-	address, tx, instance, err := store.DeployStore(auth, client.client, input)
+	address, tx, instance, err := DeployMain(auth, client.client, input)
 	if err != nil {
 		log.Fatal(err)
 	}
