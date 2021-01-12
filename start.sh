@@ -2,10 +2,16 @@
 
 ABIGENPATH=""
 GOETHEREUMPATH=""
+
 CONTRACTPATH=""
 CONTRACTFILEABI=""
 CONTRACTFILEBIN=""
 CONTRACTFILEPATH=""
+
+CONTRACTSTOREFILEPATH=""
+
+TPSMONITORPATH=""
+GOHAMMERPATH=""
 
 function usage () {
   echo ""
@@ -44,14 +50,14 @@ function install_solc () {
 
 function build_abigen () {
 	# check if go-ethereum exists
-	if [[ -f "$GOETHEREUMPATH" ]]; then
+	if [[ -f $GOETHEREUMPATH ]]; then
 		echo "debug: goethereum found $GOETHEREUMPATH ."
 	else
 		echo "debug: not found go-ethereum"
 		echo "getting go-ethereum"
 		go get -d github.com/ethereum/go-ethereum
-		GOETHEREUMPATH="${GOPATH}/src/github.com/ethereum/go-ethereum"
-		ABIGENPATH="${GOPATH}/src/github.com/ethereum/go-ethereum/cmd/abigen"
+		GOETHEREUMPATH=${GOPATH}/src/github.com/ethereum/go-ethereum
+		ABIGENPATH=${GOPATH}/src/github.com/ethereum/go-ethereum/cmd/abigen
 	fi
 }
 
@@ -74,7 +80,38 @@ function generate_abi_bin () {
 }
 
 function generate_go_modules () {
-	abigen --bin=$CONTRACTFILEBIN --abi=$CONTRACTFILEABI --pkg=store --out=store.go
+	abigen --bin=$CONTRACTFILEBIN --abi=$CONTRACTFILEABI --pkg=main --out=store.go
+
+	CONTRACTSTOREFILEPATH="$( dirname $0 )"/store.go
+}
+
+function build_tps_monitor () {
+	echo "Starting to build tps-monitor."
+	cd tps-monitor ; make
+
+	# check if tps-monitor binary exists
+	if [[ ! -f tps-monitor ]]; then
+		echo "Couldn't build tps-monitor."
+		exit 1
+	else
+		echo "tps-monitor is installed."
+	fi
+
+	TPSMONITORPATH="$( dirname $0)"/tps-monitor/tps-monitor
+	cd ..
+}
+
+function build_gohammer () {
+	go get -u -v ; go build
+
+	# check if gohammer binary exists
+	if [[ ! -f gohammer ]]; then
+		echo "Couldn't build gohammer."
+		exit 1
+	else
+		echo "gohammer is installed."
+	fi
+	GOHAMMERPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"/gohammer
 }
 
 # check GOPATH is set.
@@ -112,4 +149,6 @@ fi
 
 generate_abi_bin
 generate_go_modules
+build_tps_monitor
+build_gohammer
 
