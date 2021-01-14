@@ -1,17 +1,23 @@
 #!/bin/bash
 
-ABIGENPATH=""
-GOETHEREUMPATH=""
+ABI_GEN_PATH=""
+GO_ETHEREUM_PATH=""
 
-CONTRACTPATH=""
-CONTRACTFILEABI=""
-CONTRACTFILEBIN=""
-CONTRACTFILEPATH=""
+CONTRACT_PATH=""
+CONTRACT_FILE_ABI=""
+CONTRACT_FILE_BIN=""
+CONTRACT_FILE_PATH=""
 
-CONTRACTSTOREFILEPATH=""
+CONTRACT_STORE_FILE_PATH=""
 
-TPSMONITORPATH=""
-GOHAMMERPATH=""
+TPS_MONITOR_PATH=""
+GO_HAMMER_PATH=""
+DOCKER_COMPUSE_PATH=""
+
+QUORUM_ENDPOINT=""
+CONSENSUS=""
+
+
 
 function usage () {
   echo ""
@@ -32,8 +38,25 @@ function usage () {
 while (( $# )); do
 	case "$1" in
 		--contract)
-			CONTRACTFILEPATH=$2
-			shift2
+			CONTRACT_FILE_PATH=$2
+			shift 2
+			;;
+		 --consensus)
+			CONSENSUS=$2
+			if [ $CONSENSUS != 'raft' ] && [ $CONSENSUS != 'ibft' ]
+			then
+				echo "consensus must be raft or ibft"
+				usage
+			fi
+			shift 2
+			;;
+		--endpoint)
+			QUORUM_ENDPOINT=$2
+			shift 2
+			;;
+		--help)
+			shift
+			usage
 			;;
 		*)
 			echo "Error: Unsportted command line parameter $1"
@@ -50,39 +73,39 @@ function install_solc () {
 
 function build_abigen () {
 	# check if go-ethereum exists
-	if [[ -f $GOETHEREUMPATH ]]; then
-		echo "debug: goethereum found $GOETHEREUMPATH ."
+	if [[ -f $GO_ETHEREUM_PATH ]]; then
+		echo "debug: goethereum found $GO_ETHEREUM_PATH ."
 	else
 		echo "debug: not found go-ethereum"
 		echo "getting go-ethereum"
 		go get -d github.com/ethereum/go-ethereum
-		GOETHEREUMPATH=${GOPATH}/src/github.com/ethereum/go-ethereum
-		ABIGENPATH=${GOPATH}/src/github.com/ethereum/go-ethereum/cmd/abigen
+		GO_ETHEREUM_PATH=${GOPATH}/src/github.com/ethereum/go-ethereum
+		ABI_GEN_PATH=${GOPATH}/src/github.com/ethereum/go-ethereum/cmd/abigen
 	fi
 }
 
 function generate_abi_bin () {
-	CONTRACTPATH=$( cd "$( dirname "${CONTRACTFILEPATH}" )" >/dev/null 2>&1 && pwd )
-	if [[ -f $CONTRACTFILEPATH ]]; then
-		echo "contract path is $CONTRACTFILEPATH "
+	CONTRACT_PATH=$( cd "$( dirname "${CONTRACT_FILE_PATH}" )" >/dev/null 2>&1 && pwd )
+	if [[ -f $CONTRACT_FILE_PATH ]]; then
+		echo "contract path is $CONTRACT_FILE_PATH "
 	else
 		echo "contract not found."
 		echo "using default contract."
-		CONTRACTPATH=$CONTRACTPATH/contract
-		CONTRACTFILEPATH=$CONTRACTPATH/Store.sol
+		CONTRACT_PATH=$CONTRACT_PATH/contract
+		CONTRACT_FILE_PATH=$CONTRACT_PATH/Store.sol
 	fi
 
-	solc --abi $CONTRACTFILEPATH | awk 'NR>3' > $CONTRACTPATH/out.abi
-	CONTRACTFILEABI=$CONTRACTPATH/out.abi
+	solc --abi $CONTRACT_FILE_PATH | awk 'NR>3' > $CONTRACT_PATH/out.abi
+	CONTRACT_FILE_ABI=$CONTRACT_PATH/out.abi
 
-	solc --bin $CONTRACTFILEPATH | awk 'NR>3' > $CONTRACTPATH/out.bin
-	CONTRACTFILEBIN=$CONTRACTPATH/out.bin
+	solc --bin $CONTRACT_FILE_PATH | awk 'NR>3' > $CONTRACT_PATH/out.bin
+	CONTRACT_FILE_BIN=$CONTRACT_PATH/out.bin
 }
 
 function generate_go_modules () {
-	abigen --bin=$CONTRACTFILEBIN --abi=$CONTRACTFILEABI --pkg=main --out=store.go
+	abigen --bin=$CONTRACT_FILE_BIN --abi=$CONTRACT_FILE_ABI --pkg=main --out=store.go
 
-	CONTRACTSTOREFILEPATH="$( dirname $0 )"/store.go
+	CONTRACT_STORE_FILE_PATH="$( dirname $0 )"/store.go
 }
 
 function build_tps_monitor () {
@@ -97,7 +120,7 @@ function build_tps_monitor () {
 		echo "tps-monitor is installed."
 	fi
 
-	TPSMONITORPATH="$( dirname $0)"/tps-monitor/tps-monitor
+	TPS_MONITOR_PATH="$( dirname $0 )"/tps-monitor
 	cd ..
 }
 
@@ -111,7 +134,23 @@ function build_gohammer () {
 	else
 		echo "gohammer is installed."
 	fi
-	GOHAMMERPATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"/gohammer
+	GO_HAMMER_PATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"/gohammer
+}
+
+function start_telegraf () {
+
+}
+
+function start_docker_containers () {
+	echo "Starting Grafana, Influxdb on Docker"
+	DOCKER_COMPUSE_PATH="$( dirname $0 )"/monitoring
+	docker-compose up -d
+}
+
+function start_tps_monitor () {
+	echo "Starting tps-monitor"
+	echo "{$CONSENSUS}"
+	"${TPS_MONITOR_PATH}"/tps-monitor --httpendpoint $QUORUM_ENDPOINT --consensus=${CONSENSUS} --influxdb --influxdb.token admin:admin &
 }
 
 # check GOPATH is set.
@@ -131,24 +170,28 @@ if [[ -z "$(command -v solc)" ]]; then
 fi
 
 # check if abigen path exists
-if [[ -z "$ABIGENPATH" ]]; then
+if [[ -z "$ABI_GEN_PATH" ]]; then
 	echo "debug: abigen not found."
 else
-	ABIGENPATH=$GOPATH/src/github.com/ethereum/go-ethereum/cmd/abigen
-	GOETHEREUMPATH=$GOPATH/src/github.com/ethereum/go-ethereum
+	ABI_GEN_PATH=$GOPATH/src/github.com/ethereum/go-ethereum/cmd/abigen
+	GO_ETHEREUM_PATH=$GOPATH/src/github.com/ethereum/go-ethereum
 fi
 
 # check if abigen exe is exists
 if ! [ -x "$(command -v abigen)" ]; then
 	echo "debug: abigen is not installed."
 	echo "debug: installing abigen."
-	go build {ABIGENPATH}/main.go
+	go build {ABI_GEN_PATH}/main.go
 else
 	echo "debug: abigen is installed."
 fi
 
-generate_abi_bin
-generate_go_modules
+#generate_abi_bin
+#generate_go_modules
 build_tps_monitor
-build_gohammer
+#build_gohammer
+start_docker_containers
+start_telegraf
+start_tps_monitor
+
 
