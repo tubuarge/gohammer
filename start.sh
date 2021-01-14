@@ -137,11 +137,34 @@ function build_gohammer () {
 	GO_HAMMER_PATH="$( cd "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"/gohammer
 }
 
-function start_telegraf () {
+function install_telegraf () {
+	if ! [ -x "$(command -v telegraf)" ]; then
+		echo "debug: telegraf is not installed."
+		echo "debug: installing telegraf."
+		curl -sL https://repos.influxdata.com/influxdb.key | sudo apt-key add -
+		source /etc/lsb-release
+		echo "deb https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" | sudo tee /etc/apt/sources.list.d/influxdb.list
+		sudo apt-get update && sudo apt-get install telegraf
+	else
+		echo "debug: telegraf is installed."
+	fi
 
+	# copy telegraf.conf
+	sudo cp "$( dirname $0 )"/monitoring/telegraf.conf /etc/telegraf/telegraf.conf
+}
+
+function start_telegraf () {
+	# TODO check whether service is running or not.
+	sudo systemctl stop telegraf
+	sudo systemctl start telegraf
 }
 
 function start_docker_containers () {
+	# this part could throw error when this script run for the second time.
+	docker network create monitoring
+	docker volume create grafana-volume
+	docker volume create influxdb-volume
+
 	echo "Starting Grafana, Influxdb on Docker"
 	DOCKER_COMPUSE_PATH="$( dirname $0 )"/monitoring
 	docker-compose up -d
@@ -191,6 +214,7 @@ fi
 build_tps_monitor
 #build_gohammer
 start_docker_containers
+install_telegraf
 start_telegraf
 start_tps_monitor
 
