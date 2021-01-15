@@ -155,25 +155,61 @@ function install_telegraf () {
 
 function start_telegraf () {
 	# TODO check whether service is running or not.
-	sudo systemctl stop telegraf
-	sudo systemctl start telegraf
+	systemctl is-active --quiet telegraf
+	if [[ "$(systemctl is-active telegraf)" = "active" ]]; then
+		echo "Telegraf service is running."
+	else
+		echo "Starting telegraf service."
+		sudo systemctl start telegraf
+	fi
 }
 
 function start_docker_containers () {
-	# this part could throw error when this script run for the second time.
-	docker network create monitoring
-	docker volume create grafana-volume
-	docker volume create influxdb-volume
+	# check monitoring network is exists.
+	if [[ ! "$(docker network ls | grep -w \"monitoring\")" ]]; then
+		echo "Debug: monitoring docker network already exists."
+	else
+		docker network create monitoring
+	fi
+
+	# check volumes are exist or not.
+	if [[ ! "$(docker volume ls | grep -w \"grafana-volume\")" ]]; then
+		docker volume create grafana-volume
+	else
+		echo "Debug: grafana-volume already exists."
+	fi
+
+	if [[ ! "$(docker volume ls | grep -w \"influxdb-volume\")" ]]; then
+		docker volume create influxdb-volume
+	else
+		echo "Debug: docker-volume already exists."
+	fi
 
 	echo "Starting Grafana, Influxdb on Docker"
 	DOCKER_COMPUSE_PATH="$( dirname $0 )"/monitoring
+	# TODO: before running docker-compose check if the containers already running or not.
+	: 'if [[ "$(docker ps -a | grep -w \"grafana\")" ]]; then
+		echo "Debug: Grafana is running."
+		docker stop grafana
+		docker rm grafana
+	fi
+
+	if [[ "$(docker ps -a | grep -w \"influxdb\")" ]]; then
+		echo "Debug: Influxdb is running."
+		docker stop influxdb
+		docker rm influxdb
+	fi
+'
+
+	cd "${DOCKER_COMPUSE_PATH}"
 	docker-compose up -d
+	cd ..
 }
 
 function start_tps_monitor () {
 	echo "Starting tps-monitor"
 	echo "{$CONSENSUS}"
-	"${TPS_MONITOR_PATH}"/tps-monitor --httpendpoint $QUORUM_ENDPOINT --consensus=${CONSENSUS} --influxdb --influxdb.token admin:admin &
+	"${TPS_MONITOR_PATH}"/tps-monitor --httpendpoint $QUORUM_ENDPOINT --consensus=${CONSENSUS} --influxdb --influxdb.token admin:admin
 }
 
 # check GOPATH is set.
@@ -211,11 +247,11 @@ fi
 
 #generate_abi_bin
 #generate_go_modules
-build_tps_monitor
+#build_tps_monitor
 #build_gohammer
 start_docker_containers
-install_telegraf
-start_telegraf
-start_tps_monitor
+#install_telegraf
+#start_telegraf
+#start_tps_monitor
 
 
