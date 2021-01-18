@@ -3,18 +3,23 @@ package main
 import "gopkg.in/urfave/cli.v1"
 
 var (
-	DeployCountFlag = cli.IntFlag{
-		Name:  "deploycount",
-		Usage: `Number of deploys of the contract`,
-	}
-
 	DeployNodeUrlFlag = cli.StringFlag{
 		Name:  "nodeurl",
-		Usage: `node url where the contract will be deployed`,
+		Usage: `Node RPC URL`,
 	}
 
 	DeployNodeCipherFlag = cli.StringFlag{
 		Name:  "nodecipher",
-		Usage: `node cipher to call contract on the node`,
+		Usage: `Node cipher`,
+	}
+
+	DeployCountFlag = cli.IntSliceFlag{
+		Name:  "deploycount",
+		Usage: `Deploy count`,
+	}
+
+	DeployIntervalFlag = cli.StringFlag{
+		Name:  "deployinterval",
+		Usage: `Deploy interval`,
 	}
 )
