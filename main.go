@@ -22,12 +22,25 @@ import (
 )
 
 var (
-	app = cli.NewApp()
+	app   = cli.NewApp()
+	flags = []cli.Flag{
+		DeployNodeUrlFlag,
+		DeployCountFlag,
+		DeployNodeCipherFlag,
+	}
 )
 
 type ClientStruct struct {
 	client *ethclient.Client
 	node   config.NodeConfig
+}
+
+func init() {
+	app.Flags = flags
+}
+
+func gohammer() {
+
 }
 
 var cfg config.Config
