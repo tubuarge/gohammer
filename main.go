@@ -11,6 +11,7 @@ import (
 
 	"github.com/tubuarge/GoHammer/config"
 	"github.com/tubuarge/GoHammer/rpc"
+	"github.com/tubuarge/GoHammer/store"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -141,7 +142,7 @@ func deployContract(conn *ethclient.Client, nodeCipher string) {
 	auth.GasPrice = gasPrice
 
 	input := "1.0"
-	address, tx, instance, err := DeployMain(auth, conn, input)
+	address, tx, instance, err := store.DeployStore(auth, conn, input)
 	if err != nil {
 		log.Fatal(err)
 	}

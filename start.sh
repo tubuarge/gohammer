@@ -188,18 +188,17 @@ function start_docker_containers () {
 	echo "Starting Grafana, Influxdb on Docker"
 	DOCKER_COMPUSE_PATH="$( dirname $0 )"/monitoring
 	# TODO: before running docker-compose check if the containers already running or not.
-	: 'if [[ "$(docker ps -a | grep -w \"grafana\")" ]]; then
+	if [[ "$(docker container ls | grep grafana)" ]]; then
 		echo "Debug: Grafana is running."
 		docker stop grafana
 		docker rm grafana
 	fi
 
-	if [[ "$(docker ps -a | grep -w \"influxdb\")" ]]; then
+	if [[ "$(docker container ls | grep influxdb)" ]]; then
 		echo "Debug: Influxdb is running."
 		docker stop influxdb
 		docker rm influxdb
 	fi
-'
 
 	cd "${DOCKER_COMPUSE_PATH}"
 	docker-compose up -d

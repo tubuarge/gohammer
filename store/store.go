@@ -20,7 +20,6 @@ var (
 	_ = big.NewInt
 	_ = strings.NewReader
 	_ = ethereum.NotFound
-	_ = abi.U256
 	_ = bind.Bind
 	_ = common.Big1
 	_ = types.BloomLookup
@@ -155,7 +154,7 @@ func bindStore(address common.Address, caller bind.ContractCaller, transactor bi
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Store *StoreRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Store *StoreRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Store.Contract.StoreCaller.contract.Call(opts, result, method, params...)
 }
 
@@ -174,7 +173,7 @@ func (_Store *StoreRaw) Transact(opts *bind.TransactOpts, method string, params 
 // sets the output to result. The result type might be a single field for simple
 // returns, a slice of interfaces for anonymous returns and a struct for named
 // returns.
-func (_Store *StoreCallerRaw) Call(opts *bind.CallOpts, result interface{}, method string, params ...interface{}) error {
+func (_Store *StoreCallerRaw) Call(opts *bind.CallOpts, result *[]interface{}, method string, params ...interface{}) error {
 	return _Store.Contract.contract.Call(opts, result, method, params...)
 }
 
@@ -191,52 +190,62 @@ func (_Store *StoreTransactorRaw) Transact(opts *bind.TransactOpts, method strin
 
 // Items is a free data retrieval call binding the contract method 0x48f343f3.
 //
-// Solidity: function items(bytes32 ) constant returns(bytes32)
+// Solidity: function items(bytes32 ) view returns(bytes32)
 func (_Store *StoreCaller) Items(opts *bind.CallOpts, arg0 [32]byte) ([32]byte, error) {
-	var (
-		ret0 = new([32]byte)
-	)
-	out := ret0
-	err := _Store.contract.Call(opts, out, "items", arg0)
-	return *ret0, err
+	var out []interface{}
+	err := _Store.contract.Call(opts, &out, "items", arg0)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
 // Items is a free data retrieval call binding the contract method 0x48f343f3.
 //
-// Solidity: function items(bytes32 ) constant returns(bytes32)
+// Solidity: function items(bytes32 ) view returns(bytes32)
 func (_Store *StoreSession) Items(arg0 [32]byte) ([32]byte, error) {
 	return _Store.Contract.Items(&_Store.CallOpts, arg0)
 }
 
 // Items is a free data retrieval call binding the contract method 0x48f343f3.
 //
-// Solidity: function items(bytes32 ) constant returns(bytes32)
+// Solidity: function items(bytes32 ) view returns(bytes32)
 func (_Store *StoreCallerSession) Items(arg0 [32]byte) ([32]byte, error) {
 	return _Store.Contract.Items(&_Store.CallOpts, arg0)
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
-// Solidity: function version() constant returns(string)
+// Solidity: function version() view returns(string)
 func (_Store *StoreCaller) Version(opts *bind.CallOpts) (string, error) {
-	var (
-		ret0 = new(string)
-	)
-	out := ret0
-	err := _Store.contract.Call(opts, out, "version")
-	return *ret0, err
+	var out []interface{}
+	err := _Store.contract.Call(opts, &out, "version")
+
+	if err != nil {
+		return *new(string), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(string)).(*string)
+
+	return out0, err
+
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
-// Solidity: function version() constant returns(string)
+// Solidity: function version() view returns(string)
 func (_Store *StoreSession) Version() (string, error) {
 	return _Store.Contract.Version(&_Store.CallOpts)
 }
 
 // Version is a free data retrieval call binding the contract method 0x54fd4d50.
 //
-// Solidity: function version() constant returns(string)
+// Solidity: function version() view returns(string)
 func (_Store *StoreCallerSession) Version() (string, error) {
 	return _Store.Contract.Version(&_Store.CallOpts)
 }
@@ -393,5 +402,6 @@ func (_Store *StoreFilterer) ParseItemSet(log types.Log) (*StoreItemSet, error) 
 	if err := _Store.contract.UnpackLog(event, "ItemSet", log); err != nil {
 		return nil, err
 	}
+	event.Raw = log
 	return event, nil
 }
