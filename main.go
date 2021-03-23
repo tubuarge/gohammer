@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"crypto/ecdsa"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
 	"os"
-	"time"
+	"path/filepath"
 
 	"github.com/tubuarge/GoHammer/config"
 	"github.com/tubuarge/GoHammer/rpc"
@@ -30,11 +31,28 @@ var (
 	}
 
 	rpcClient *rpc.RPCClient
+
+	cfg config.Config
 )
 
 type ClientStruct struct {
 	client *ethclient.Client
 	node   config.NodeConfig
+}
+
+func readConfig(cfg *config.Config, configFileName string) {
+	configFileName, _ = filepath.Abs(configFileName)
+	log.Infof("Loading config: %v", configFileName)
+
+	configFile, err := os.Open(configFileName)
+	if err != nil {
+		log.Fatal("File error: ", err.Error())
+	}
+	defer configFile.Close()
+	jsonParser := json.NewDecoder(configFile)
+	if err := jsonParser.Decode(&cfg); err != nil {
+		log.Fatal("Config error: ", err.Error())
+	}
 }
 
 func init() {
@@ -56,60 +74,85 @@ func init() {
 		return nil
 	}
 	app.Flags = flags
-	app.Usage = "GoHammer deploys a smart contract in the given node and interval."
+	app.Usage = "GoHammer deploys a smart contract in the given node(s) and interval according to test profile JSON file given by the user."
+}
+
+// checkNodes calls isNodeUp function to ensure that every node is running
+// before starting the test.
+// If there is a failed node then terminates the GoHammer.
+func checkNodes(cfg *config.Config) {
+	isOK := true
+
+	profiles := cfg.TestProfiles
+
+	for _, profile := range profiles {
+		nodes := profile.Nodes
+		for _, node := range nodes {
+			isNodeUp, err := rpcClient.IsNodeUp(node.URL)
+			if err != nil {
+				isOK = false
+				log.Errorf("%s node is not running: %v", node.Name, err)
+				continue
+			}
+			if !isNodeUp {
+				isOK = false
+				log.Errorf("%s node is not running.", node.Name)
+				continue
+			}
+			log.Infof("%s node is OK.", node.Name)
+		}
+	}
+
+	if !isOK {
+		log.Fatalf("Make sure every node given in the test-profile file is running.")
+	}
 }
 
 func gohammer(ctx *cli.Context) error {
-	nodeUrl := ctx.GlobalString(DeployNodeUrlFlag.Name)
-	nodeCipher := ctx.GlobalString(DeployNodeCipherFlag.Name)
-	deployCount := ctx.GlobalIntSlice(DeployCountFlag.Name)
-	deployInterval := ctx.GlobalString(DeployIntervalFlag.Name)
+	testProfileFileName := ctx.GlobalString(TestProfileConfigFileFlag.Name)
 
-	// check deploy count is at least have one item.
-	if len(deployCount) < 1 {
-		return errors.New("at least provide one deploy count.")
+	// check if test profile name is not empty
+	if testProfileFileName != "" {
+		return errors.New("Please, enter a test-profile file")
 	}
 
-	// check if given node url is not empty or has a working node.
-	if nodeUrl == "" {
-		return errors.New("give a node RPC url.")
-	} else {
-		isNodeUp, err := rpcClient.IsNodeUp(nodeUrl)
-		if err != nil {
-			return err
-		}
-		if !isNodeUp {
-			return errors.New("given node is not working.")
-		}
-	}
+	readConfig(&cfg, testProfileFileName)
+	checkNodes(&cfg)
 
-	// if deploy interval is not given then use default deploy interval.
-	if deployInterval == "" {
-		deployInterval = "30s"
-	}
-
-	interval, err := time.ParseDuration(deployInterval)
-	if err != nil {
-		return errors.New("given interval can't convert to duration.")
-	}
-
-	deploy(nodeUrl, nodeCipher, deployCount, interval)
+	startTest(&cfg)
 	return nil
 }
 
-func deploy(nodeUrl, nodeCipher string, deployCount []int, deployInterval time.Duration) {
+func startTest(cfg *config.Config) {
+	profiles := cfg.TestProfiles
+
+	if cfg.Concurrent {
+		for _, profile := range profiles {
+			nodes := profile.Nodes
+
+			for _, node := range nodes {
+
+			}
+		}
+	}
+
+}
+
+func deployTestProfile(testProfile *config.TestProfile) error {
+	for _, node := range testProfile.Nodes {
+		for _, elemDeployCount := range node.DeployCount {
+			deploy(node.URL, node.Cipher, elemDeployCount)
+		}
+	}
+}
+
+func deploy(nodeUrl, nodeCipher string, deployCount int) {
 	conn, err := ethclient.Dial(nodeUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for _, elem := range deployCount {
-		for i := 0; i < elem; i++ {
-			deployContract(conn, nodeCipher)
-		}
-		log.Infof("Deployed %d transaction on the given node.", elem)
-		time.Sleep(deployInterval)
-	}
+	deployContract(conn, nodeCipher)
 }
 
 func deployContract(conn *ethclient.Client, nodeCipher string) {

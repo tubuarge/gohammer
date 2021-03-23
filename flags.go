@@ -22,4 +22,9 @@ var (
 		Name:  "deployinterval",
 		Usage: `Deploy interval`,
 	}
+
+	TestProfileConfigFileFlag = cli.StringFlag{
+		Name:  "testprofilefile",
+		Usage: `--testprofilefile <filename.json>`,
+	}
 )

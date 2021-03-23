@@ -1,0 +1,70 @@
+{
+    "concurrent": false,
+    "profiles": [
+        {
+            "concurrent": false,
+            "nodes": [
+                {
+                    "name": "Node 1",
+                    "url": "http://127.0.0.1:2200",
+                    "cipher": "1234klajsdf1234asdfjl",
+                    "deployCount": [
+                        500,
+                        1000,
+                        2000
+                    ],
+                    "deployInterval": 20
+                },
+                {
+                    "name": "Node 2",
+                    "url": "http://127.0.0.1:22001",
+                    "cipher": "alksjdfkla1234214szdfk",
+                    "deployCount": [
+                        100,
+                        300,
+                        4000
+                    ],
+                    "deployInterval": 60
+                }
+            ]
+        },
+        {
+            "concurrent": true,
+            "nodes": [
+                {
+                    "name": "Node 1",
+                    "url": "http://127.0.0.1:22000",
+                    "cipher": "1234klajsdf1234asdfjl",
+                    "deployCount": [
+                        1000,
+                        2000,
+                        3000
+                    ],
+                    "deployInterval": 20
+                },
+                {
+                    "name": "Node 2",
+                    "url": "http://127.0.0.1:23000",
+                    "cipher": "1234klajsdf1234asdfjl",
+                    "deployCount": [
+                        1000,
+                        2000,
+                        3000
+                    ],
+                    "deployInterval": 20
+                },
+                {
+                    "name": "Node 3",
+                    "url": "http://127.0.0.1:23000",
+                    "cipher": "1234klajsdf1234asdfjl",
+                    "deployCount": [
+                        1000,
+                        2000,
+                        3000
+                    ],
+                    "deployInterval": 20
+                }
+            ]
+        }
+    ]
+}
