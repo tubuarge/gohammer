@@ -27,4 +27,9 @@ var (
 		Name:  "testprofilefile",
 		Usage: `--testprofilefile <filename.json>`,
 	}
+
+	TestProfileNameFlag = cli.StringFlag{
+		Name:  "testprofile",
+		Usage: `--testprofile <Profile 1>`,
+	}
 )

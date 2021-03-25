@@ -2,12 +2,13 @@
     "concurrent": false,
     "profiles": [
         {
+            "name": "Profile 1",
             "concurrent": false,
             "nodes": [
                 {
                     "name": "Node 1",
-                    "url": "http://127.0.0.1:2200",
-                    "cipher": "1234klajsdf1234asdfjl",
+                    "url": "http://127.0.0.1:22000",
+                    "cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377",
                     "deployCount": [
                         500,
                         1000,
@@ -17,8 +18,8 @@
                 },
                 {
                     "name": "Node 2",
-                    "url": "http://127.0.0.1:22001",
-                    "cipher": "alksjdfkla1234214szdfk",
+                    "url": "http://127.0.0.1:22000",
+                    "cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377",
                     "deployCount": [
                         100,
                         300,
@@ -29,40 +30,30 @@
             ]
         },
         {
+            "name": "Profile 2",
             "concurrent": true,
             "nodes": [
                 {
                     "name": "Node 1",
                     "url": "http://127.0.0.1:22000",
-                    "cipher": "1234klajsdf1234asdfjl",
+                    "cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377",
                     "deployCount": [
+                        500,
                         1000,
-                        2000,
-                        3000
+                        2000
                     ],
                     "deployInterval": 20
                 },
                 {
                     "name": "Node 2",
-                    "url": "http://127.0.0.1:23000",
-                    "cipher": "1234klajsdf1234asdfjl",
+                    "url": "http://127.0.0.1:22000",
+                    "cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377",
                     "deployCount": [
-                        1000,
-                        2000,
-                        3000
+                        100,
+                        300,
+                        4000
                     ],
-                    "deployInterval": 20
-                },
-                {
-                    "name": "Node 3",
-                    "url": "http://127.0.0.1:23000",
-                    "cipher": "1234klajsdf1234asdfjl",
-                    "deployCount": [
-                        1000,
-                        2000,
-                        3000
-                    ],
-                    "deployInterval": 20
+                    "deployInterval": 60
                 }
             ]
         }

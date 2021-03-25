@@ -16,6 +16,7 @@ type Config struct {
 }
 
 type TestProfile struct {
+	Name  string       `json:"name"`
 	Nodes []NodeConfig `json:"nodes"`
 
 	// Indicates that given test profile contract will be deployed
