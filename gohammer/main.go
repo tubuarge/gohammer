@@ -7,17 +7,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tubuarge/GoHammer/config"
-	"github.com/tubuarge/GoHammer/rpc"
-	"github.com/tubuarge/GoHammer/store"
-
-	"github.com/ethereum/go-ethereum/ethclient"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/urfave/cli.v1"
+
+	"github.com/tubuarge/GoHammer/config"
+	"github.com/tubuarge/GoHammer/logger"
+	"github.com/tubuarge/GoHammer/rpc"
+	"github.com/tubuarge/GoHammer/store"
 )
 
 const (
-	TestResultFileName = "result.log"
+	TestResultFilename = "result.log"
 )
 
 var (
@@ -26,15 +26,12 @@ var (
 		TestProfileConfigFileFlag,
 	}
 
-	rpcClient *rpc.RPCClient
+	rpcClient    *rpc.RPCClient
+	loggerClient *logger.LogClient
+	deployClient *store.DeployClient
 
 	cfg config.Config
 )
-
-type ClientStruct struct {
-	client *ethclient.Client
-	node   config.NodeConfig
-}
 
 func readConfig(cfg *config.Config, configFileName string) {
 	configFileName, _ = filepath.Abs(configFileName)
@@ -56,6 +53,13 @@ func init() {
 		FullTimestamp: true,
 	})
 
+	loggerClient, err := logger.NewLogClient(TestResultFilename)
+	if err != nil {
+		log.Error("Couln't create log file: %v", err)
+	}
+
+	deployClient = store.NewDeployClient(loggerClient)
+
 	rpcClient = rpc.NewRPCClient()
 
 	app.Action = gohammer
@@ -66,11 +70,13 @@ func init() {
 	}
 
 	app.After = func(c *cli.Context) error {
+		loggerClient.CloseFile()
+
 		log.Info("Exiting GoHammer.")
 		return nil
 	}
 	app.Flags = flags
-	app.Usage = "GoHammer deploys a smart contract in the given node(s) and interval according to test profile JSON file given by the user."
+	app.Usage = "GoHammer deploys a smart contract in the given node(s) and interval according to test profile JSON file that is given by the user."
 }
 
 func gohammer(ctx *cli.Context) error {
@@ -86,22 +92,14 @@ func gohammer(ctx *cli.Context) error {
 
 	testProfiles := cfg.TestProfiles
 	startTest(testProfiles)
+
 	return nil
 }
 
 func startTest(testProfiles []config.TestProfile) {
 	for _, profile := range testProfiles {
-		store.DeployTestProfile(&profile)
+		deployClient.DeployTestProfile(&profile)
 	}
-}
-
-func stringInSlice(elem string, list []string) bool {
-	for _, value := range list {
-		if value == elem {
-			return true
-		}
-	}
-	return false
 }
 
 func main() {

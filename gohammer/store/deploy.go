@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -11,7 +12,16 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/tubuarge/GoHammer/config"
+	"github.com/tubuarge/GoHammer/logger"
 )
+
+type DeployClient struct {
+	Logger *logger.LogClient
+}
+
+func NewDeployClient(logClient *logger.LogClient) *DeployClient {
+	return &DeployClient{Logger: logClient}
+}
 
 func deployContract(conn *ethclient.Client, nodeCipher string) {
 	privateKey, err := crypto.HexToECDSA(nodeCipher)
@@ -54,13 +64,29 @@ func deployContract(conn *ethclient.Client, nodeCipher string) {
 	_ = instance
 }
 
-func DeployTestProfile(testProfile *config.TestProfile) {
-	log.Infof("Starting %s...", testProfile.Name)
+func (d *DeployClient) DeployTestProfile(testProfile *config.TestProfile) {
+	log.Infof("Starting to test %s...", testProfile.Name)
+
+	testStartTimestamp := time.Now()
+	totalTxCount := 0
+
 	for _, node := range testProfile.Nodes {
 		log.Infof("Starting to deploy on %s node", node.Name)
 		for _, elemDeployCount := range node.DeployCount {
 			deploy(node.URL, node.Cipher, elemDeployCount)
+			totalTxCount++
 		}
+	}
+	testEndTimestamp := time.Now()
+	elapsedTime := time.Since(testStartTimestamp)
+
+	d.Logger.TestResult.TestStartTimestamp = testStartTimestamp
+
+	d.Logger.TestResult = &logger.TestResults{
+		TestStartTimestamp:   testStartTimestamp,
+		TestEndTimestamp:     testEndTimestamp,
+		OverallExecutionTime: elapsedTime,
+		TotalTxCount:         totalTxCount,
 	}
 }
 
