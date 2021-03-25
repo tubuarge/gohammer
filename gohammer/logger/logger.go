@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -43,6 +44,24 @@ func CreateLogFile(filename string) (*os.File, error) {
 
 func (l *LogClient) WriteFile(data []byte) error {
 	_, err := l.LogFile.Write(data)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (l *LogClient) WriteTestResults() error {
+	strData := fmt.Sprintf(`
+	Test Started At: %v\n
+	Test Ended At: %v\n
+	Total Test Execution Time: %v\n
+	Total Transaction Count: %d\n`,
+		l.TestResult.TestStartTimestamp,
+		l.TestResult.TestEndTimestamp,
+		l.TestResult.OverallExecutionTime,
+		l.TestResult.TotalTxCount)
+
+	err := l.WriteFile([]byte(strData))
 	if err != nil {
 		return err
 	}

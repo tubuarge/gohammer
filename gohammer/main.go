@@ -56,6 +56,7 @@ func init() {
 	loggerClient, err := logger.NewLogClient(TestResultFilename)
 	if err != nil {
 		log.Error("Couln't create log file: %v", err)
+		loggerClient.LogFile = nil
 	}
 
 	deployClient = store.NewDeployClient(loggerClient)
@@ -70,7 +71,14 @@ func init() {
 	}
 
 	app.After = func(c *cli.Context) error {
-		loggerClient.CloseFile()
+		if loggerClient.LogFile != nil {
+			err := loggerClient.WriteTestResults()
+			if err != nil {
+				log.Error("Error while writing to log file: %v", err)
+			}
+
+			loggerClient.CloseFile()
+		}
 
 		log.Info("Exiting GoHammer.")
 		return nil
