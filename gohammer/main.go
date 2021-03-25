@@ -105,9 +105,7 @@ func gohammer(ctx *cli.Context) error {
 }
 
 func startTest(testProfiles []config.TestProfile) {
-	for _, profile := range testProfiles {
-		deployClient.DeployTestProfile(&profile)
-	}
+	deployClient.DeployTestProfiles(testProfiles)
 }
 
 func main() {

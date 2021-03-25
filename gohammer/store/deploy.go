@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"crypto/ecdsa"
+	"fmt"
 	"math/big"
 	"time"
 
@@ -53,53 +54,100 @@ func deployContract(conn *ethclient.Client, nodeCipher string) {
 	auth.GasPrice = gasPrice
 
 	input := "1.0"
-	address, tx, instance, err := DeployStore(auth, conn, input)
+	//address, tx, instance, err := DeployStore(auth, conn, input)
+	_, _, instance, err := DeployStore(auth, conn, input)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	log.Info("Address: ", address.Hex())
-	log.Info("Tx Hash: ", tx.Hash().Hex())
+	/*
+		log.Info("Address: ", address.Hex())
+		log.Info("Tx Hash: ", tx.Hash().Hex())
+	*/
 
 	_ = instance
 }
 
-func (d *DeployClient) DeployTestProfile(testProfile *config.TestProfile) {
-	log.Infof("Starting to test %s...", testProfile.Name)
-
+func (d *DeployClient) DeployTestProfiles(testProfiles []config.TestProfile) {
 	testStartTimestamp := time.Now()
-	totalTxCount := 0
 
-	for _, node := range testProfile.Nodes {
-		log.Infof("Starting to deploy on %s node", node.Name)
-		for _, elemDeployCount := range node.DeployCount {
-			deploy(node.URL, node.Cipher, elemDeployCount)
-			totalTxCount++
-		}
+	d.Logger.TestResult = &logger.TestResults{
+		TestStartTimestamp: testStartTimestamp,
+		TotalTxCount:       0,
 	}
+
+	for _, profile := range testProfiles {
+		d.TestProfile(&profile)
+	}
+
 	testEndTimestamp := time.Now()
 	elapsedTime := time.Since(testStartTimestamp)
 
 	d.Logger.TestResult.TestStartTimestamp = testStartTimestamp
-
-	d.Logger.TestResult = &logger.TestResults{
-		TestStartTimestamp:   testStartTimestamp,
-		TestEndTimestamp:     testEndTimestamp,
-		OverallExecutionTime: elapsedTime,
-		TotalTxCount:         totalTxCount,
-	}
+	d.Logger.TestResult.TestEndTimestamp = testEndTimestamp
+	d.Logger.TestResult.OverallExecutionTime = elapsedTime
 }
 
-func deploy(nodeUrl, nodeCipher string, deployCount int) {
-	conn, err := createConn(nodeUrl)
+func (d *DeployClient) TestProfile(testProfile *config.TestProfile) {
+	log.Infof("Starting to test %s...", testProfile.Name)
+
+	testStartTimestamp := time.Now()
+	d.Logger.WriteTestEntry("Started to test.", testProfile.Name, testStartTimestamp)
+	d.Logger.WriteNewLine()
+
+	for _, node := range testProfile.Nodes {
+		log.Infof("Starting to deploy on %s node", node.Name)
+		d.testNode(&node)
+	}
+
+	d.Logger.WriteTestEntry("Ended test.", testProfile.Name, time.Now())
+
+	elapsedTime := time.Since(testStartTimestamp)
+	d.Logger.WriteTestEntry(
+		fmt.Sprintf("Elapsed test run time: %s", elapsedTime),
+		testProfile.Name,
+		time.Now(),
+	)
+	d.Logger.WriteTestEntrySeperator()
+
+}
+
+func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
+	conn, err := createConn(nodeConfig.URL)
 	if err != nil {
 		log.Fatalf("Error while creating ETH Client Connection: %v", err)
 	}
 
-	for i := 0; i < deployCount; i++ {
-		deployContract(conn, nodeCipher)
+	for _, deployCount := range nodeConfig.DeployCounts {
+		testStartTimestamp := time.Now()
+		d.Logger.WriteTestEntry(
+			"Started to test.",
+			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
+			testStartTimestamp,
+		)
+
+		for i := 0; i < deployCount; i++ {
+			deployContract(conn, nodeConfig.Cipher)
+			d.Logger.TestResult.TotalTxCount++
+		}
+
+		log.Infof("Deployed %d transaction on the given node.", deployCount)
+		d.Logger.WriteTestEntry(
+			"Ended test.",
+			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
+			time.Now(),
+		)
+
+		elapsedTime := time.Since(testStartTimestamp)
+		d.Logger.WriteTestEntry(
+			fmt.Sprintf("Elapsed test run time: %s", elapsedTime),
+			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
+			time.Now(),
+		)
+		d.Logger.WriteNewLine()
+
+		time.Sleep(nodeConfig.DeployInterval)
 	}
-	log.Infof("Deployed %d transaction on the given node.", deployCount)
 }
 
 func createConn(nodeUrl string) (*ethclient.Client, error) {

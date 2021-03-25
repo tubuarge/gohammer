@@ -32,6 +32,6 @@ type NodeConfig struct {
 	Name           string        `json:"name"`
 	URL            string        `json:"url"`
 	Cipher         string        `json:"cipher"`
-	DeployCount    []int         `json:"deployCount"`
+	DeployCounts   []int         `json:"deployCounts"`
 	DeployInterval time.Duration `json:"deployInterval"`
 }
