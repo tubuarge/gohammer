@@ -1,7 +1,5 @@
 package config
 
-import "time"
-
 type Config struct {
 	TestProfiles []TestProfile `json:"profiles"`
 
@@ -29,9 +27,9 @@ type TestProfile struct {
 }
 
 type NodeConfig struct {
-	Name           string        `json:"name"`
-	URL            string        `json:"url"`
-	Cipher         string        `json:"cipher"`
-	DeployCounts   []int         `json:"deployCounts"`
-	DeployInterval time.Duration `json:"deployInterval"`
+	Name           string `json:"name"`
+	URL            string `json:"url"`
+	Cipher         string `json:"cipher"`
+	DeployCounts   []int  `json:"deployCounts"`
+	DeployInterval string `json:"deployInterval"`
 }

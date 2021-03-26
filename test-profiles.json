@@ -14,7 +14,7 @@
                         100,
                         200
                     ],
-                    "deployInterval": 20
+                    "deployInterval": "20s"
                 },
                 {
                     "name": "Node 2",
@@ -25,7 +25,7 @@
                         150,
                         300
                     ],
-                    "deployInterval": 60
+                    "deployInterval": "20s"
                 }
             ]
         },
@@ -42,7 +42,7 @@
                         100,
                         200
                     ],
-                    "deployInterval": 20
+                    "deployInterval": "20s"
                 },
                 {
                     "name": "Node 2",
@@ -53,7 +53,7 @@
                         150,
                         300
                     ],
-                    "deployInterval": 60
+                    "deployInterval": "20s"
                 }
             ]
         }

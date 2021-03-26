@@ -14,6 +14,7 @@ import (
 
 	"github.com/tubuarge/GoHammer/config"
 	"github.com/tubuarge/GoHammer/logger"
+	"github.com/tubuarge/GoHammer/util"
 )
 
 type DeployClient struct {
@@ -92,23 +93,32 @@ func (d *DeployClient) TestProfile(testProfile *config.TestProfile) {
 	log.Infof("Starting to test [%s]...", testProfile.Name)
 
 	testStartTimestamp := time.Now()
-	d.Logger.WriteTestEntry("Started to test.", testProfile.Name, testStartTimestamp)
-	d.Logger.WriteNewLine()
+	d.Logger.WriteTestEntry(
+		"Started to test.",
+		testProfile.Name,
+		testStartTimestamp,
+		logger.SeperatorNewLine,
+	)
 
 	for _, node := range testProfile.Nodes {
 		log.Infof("Starting to deploy on [%s] node...", node.Name)
 		d.testNode(&node)
 	}
 
-	d.Logger.WriteTestEntry("Ended test.", testProfile.Name, time.Now())
+	d.Logger.WriteTestEntry(
+		"Ended test.",
+		testProfile.Name,
+		time.Now(),
+		logger.SeperatorNone,
+	)
 
 	elapsedTime := time.Since(testStartTimestamp)
 	d.Logger.WriteTestEntry(
 		fmt.Sprintf("Elapsed test run time: %s", elapsedTime),
 		testProfile.Name,
 		time.Now(),
+		logger.SeperatorProfile,
 	)
-	d.Logger.WriteTestEntrySeperator()
 }
 
 func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
@@ -123,6 +133,7 @@ func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
 			"Started to test.",
 			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
 			testStartTimestamp,
+			logger.SeperatorNone,
 		)
 
 		for i := 0; i < deployCount; i++ {
@@ -135,6 +146,7 @@ func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
 			"Ended test.",
 			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
 			time.Now(),
+			logger.SeperatorNone,
 		)
 
 		elapsedTime := time.Since(testStartTimestamp)
@@ -142,10 +154,14 @@ func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
 			fmt.Sprintf("Elapsed test run time: %s", elapsedTime),
 			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
 			time.Now(),
+			logger.SeperatorNewLine,
 		)
-		d.Logger.WriteNewLine()
 
-		time.Sleep(nodeConfig.DeployInterval)
+		duration, err := util.ParseDuration(nodeConfig.DeployInterval)
+		if err != nil {
+			log.Errorf("Error while parsing deploy intervar: %v", err)
+		}
+		time.Sleep(duration)
 	}
 }
 

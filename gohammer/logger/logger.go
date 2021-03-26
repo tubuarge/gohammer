@@ -3,11 +3,16 @@ package logger
 import (
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/tubuarge/GoHammer/util"
+)
+
+const (
+	SeperatorNone    = 0
+	SeperatorProfile = 1
+	SeperatorNewLine = 2
 )
 
 type TestResults struct {
@@ -66,25 +71,29 @@ func (l *LogClient) WriteFile(data []byte) error {
 	return nil
 }
 
-func (l *LogClient) WriteTestEntry(msg, entryTitle string, timestamp time.Time) {
-	entry := fmt.Sprintf("[%s] %s: %s\n",
+func (l *LogClient) WriteTestEntry(msg, entryTitle string, timestamp time.Time, seperatorType int) {
+	seperatorStr := ""
+
+	switch seperatorType {
+	case 1:
+		seperatorStr = util.GetTestEntrySeperatorStr()
+	case 2:
+		seperatorStr = "\n"
+	default:
+		seperatorStr = ""
+	}
+
+	entry := fmt.Sprintf("[%s] %s: %s\n%s",
 		entryTitle,
 		util.GetFormattedTimestamp(util.LoggerTimestampLayout, timestamp),
-		msg)
+		msg,
+		seperatorStr,
+	)
 
 	err := l.WriteFile([]byte(entry))
 	if err != nil {
 		log.Errorf("Error while writing Test Entry: %v", err)
 	}
-}
-func (l *LogClient) WriteNewLine() {
-	l.WriteFile([]byte("\n"))
-}
-
-func (l *LogClient) WriteTestEntrySeperator() {
-	entry := fmt.Sprintf("%s\n", strings.Repeat("=", 77))
-
-	l.WriteFile([]byte(entry))
 }
 
 func (l *LogClient) WriteTestResults() error {
