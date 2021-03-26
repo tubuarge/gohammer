@@ -1,0 +1,61 @@
+{
+    "concurrent": false,
+    "profiles": [
+        {
+            "name": "Profile 1",
+            "concurrent": false,
+            "nodes": [
+                {
+                    "name": "Node 1",
+                    "url": "http://127.0.0.1:22000",
+                    "cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377",
+                    "deployCounts": [
+                        50,
+                        100,
+                        200
+                    ],
+                    "deployInterval": "20s"
+                },
+                {
+                    "name": "Node 2",
+                    "url": "http://127.0.0.1:22000",
+                    "cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377",
+                    "deployCounts": [
+                        100,
+                        150,
+                        300
+                    ],
+                    "deployInterval": "20s"
+                }
+            ]
+        },
+        {
+            "name": "Profile 2",
+            "concurrent": true,
+            "nodes": [
+                {
+                    "name": "Node 1",
+                    "url": "http://127.0.0.1:22000",
+                    "cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377",
+                    "deployCounts": [
+                        50,
+                        100,
+                        200
+                    ],
+                    "deployInterval": "20s"
+                },
+                {
+                    "name": "Node 2",
+                    "url": "http://127.0.0.1:22000",
+                    "cipher": "4e77046ba3f699e744acb4a89c36a3ea1158a1bd90a076d36675f4c883864377",
+                    "deployCounts": [
+                        100,
+                        150,
+                        300
+                    ],
+                    "deployInterval": "20s"
+                }
+            ]
+        }
+    ]
+}
