@@ -32,4 +32,9 @@ var (
 		Name:  "testprofile",
 		Usage: `--testprofile <Profile 1>`,
 	}
+
+	TestLogDirFlag = cli.StringFlag{
+		Name:  "logdir",
+		Usage: `--logdir <path>`,
+	}
 )

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"os"
 	"time"
 )
 
@@ -29,4 +30,19 @@ func GetFormattedTimestamp(layout string, timestamp time.Time) string {
 func GetFormattedTimestampNow() string {
 	now := time.Now()
 	return now.Format(FileTimestampLayout)
+}
+
+func IsDirExists(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+	return true
+}
+
+func CreateDir(path string) error {
+	err := os.Mkdir(path, 0755)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -23,25 +23,42 @@ type LogClient struct {
 	TestResult *TestResults
 }
 
-func NewLogClient(filename string) (*LogClient, error) {
-	file, err := CreateLogFile(filename)
-	if err != nil {
-		return nil, err
-	}
+func NewLogClient(logDirFile *os.File) *LogClient {
 	return &LogClient{
-		LogFile:    file,
+		LogFile:    logDirFile,
 		TestResult: &TestResults{},
-	}, nil
+	}
 }
 
-func CreateLogFile(filename string) (*os.File, error) {
-	ts := util.GetFormattedTimestampNow()
-	fullFilename := ts + " " + filename
-	file, err := os.Create(fullFilename)
+func CreateLogFile(filepath, filename string) (*os.File, error) {
+	var fullPath string
+	//if filepath is empty then, user didn't pass logDir cmd option
+	//so use default dir.
+	log.Info("filePath: ", filepath)
+	if filepath != "" {
+		//check if dir exists in the given filepath or not
+		//if it is not exits then create the dir
+		if !util.IsDirExists(filepath) {
+			log.Info("folder is not exits: ", filepath)
+			util.CreateDir(filepath)
+		}
+		fullPath = filepath + "/"
+	}
+
+	logFilename := getLogFilename(filename)
+	fullPath += logFilename
+	log.Info("fullPath: ", fullPath)
+
+	file, err := os.Create(fullPath)
 	if err != nil {
 		return nil, err
 	}
 	return file, nil
+}
+
+func getLogFilename(filename string) string {
+	ts := util.GetFormattedTimestampNow()
+	return ts + "_" + filename
 }
 
 func (l *LogClient) WriteFile(data []byte) error {
@@ -58,6 +75,8 @@ func (l *LogClient) WriteTestEntry(msg, entryTitle string, timestamp time.Time) 
 		util.GetFormattedTimestamp(util.LoggerTimestampLayout, timestamp),
 		msg)
 
+	log.Info("hello", l.LogFile)
+	log.Info("entry: ", entry)
 	err := l.WriteFile([]byte(entry))
 	if err != nil {
 		log.Errorf("Error while writing Test Entry: %v", err)

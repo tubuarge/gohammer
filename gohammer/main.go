@@ -24,6 +24,7 @@ var (
 	app   = cli.NewApp()
 	flags = []cli.Flag{
 		TestProfileConfigFileFlag,
+		TestLogDirFlag,
 	}
 
 	rpcClient    *rpc.RPCClient
@@ -53,14 +54,6 @@ func init() {
 		FullTimestamp: true,
 	})
 
-	loggerClient, err := logger.NewLogClient(TestResultFilename)
-	if err != nil {
-		log.Error("Couln't create log file: %v", err)
-		loggerClient.LogFile = nil
-	}
-
-	deployClient = store.NewDeployClient(loggerClient)
-
 	rpcClient = rpc.NewRPCClient()
 
 	app.Action = gohammer
@@ -74,10 +67,10 @@ func init() {
 		if loggerClient.LogFile != nil {
 			err := loggerClient.WriteTestResults()
 			if err != nil {
-				log.Error("Error while writing to log file: %v", err)
+				log.Errorf("Error while writing to log file: %v", err)
 			}
 
-			loggerClient.CloseFile()
+			defer loggerClient.CloseFile()
 		}
 
 		log.Info("Exiting GoHammer.")
@@ -89,11 +82,18 @@ func init() {
 
 func gohammer(ctx *cli.Context) error {
 	testProfileFileName := ctx.GlobalString(TestProfileConfigFileFlag.Name)
+	testLogDirName := ctx.GlobalString(TestLogDirFlag.Name)
 
 	// check if test profile name is not empty
 	if testProfileFileName == "" {
 		return errors.New("Please, enter a test-profile file: --testprofilefile <file.json>")
 	}
+
+	loggerClient, err := checkTestLogDirNameFlag(testLogDirName)
+	if err != nil {
+		log.Errorf("Error while creating logger client: %v", err)
+	}
+	deployClient = store.NewDeployClient(loggerClient)
 
 	readConfig(&cfg, testProfileFileName)
 	rpcClient.CheckNodes(&cfg)
@@ -102,6 +102,30 @@ func gohammer(ctx *cli.Context) error {
 	startTest(testProfiles)
 
 	return nil
+}
+
+func checkTestLogDirNameFlag(testLogDirName string) (*logger.LogClient, error) {
+	var logDirFile *os.File
+	var err error
+
+	// check if log dir option is not empty
+	if testLogDirName != "" {
+		// check if given dir is exists or not
+		testLogAbsDirPath, err := filepath.Abs(testLogDirName)
+		logDirFile, err = logger.CreateLogFile(testLogAbsDirPath, TestResultFilename)
+		if err != nil {
+			return nil, err
+		}
+		return logger.NewLogClient(logDirFile), nil
+	} else {
+		logDirFile, err = logger.CreateLogFile(testLogDirName, TestResultFilename)
+		if err != nil {
+			return nil, err
+		}
+		return logger.NewLogClient(logDirFile), nil
+	}
+	//loggerClient = logger.NewLogClient(logDirFile)
+	//log.Info("logDirFile: ", loggerClient.LogFile)
 }
 
 func startTest(testProfiles []config.TestProfile) {
