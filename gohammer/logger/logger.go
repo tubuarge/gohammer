@@ -34,12 +34,10 @@ func CreateLogFile(filepath, filename string) (*os.File, error) {
 	var fullPath string
 	//if filepath is empty then, user didn't pass logDir cmd option
 	//so use default dir.
-	log.Info("filePath: ", filepath)
 	if filepath != "" {
 		//check if dir exists in the given filepath or not
 		//if it is not exits then create the dir
 		if !util.IsDirExists(filepath) {
-			log.Info("folder is not exits: ", filepath)
 			util.CreateDir(filepath)
 		}
 		fullPath = filepath + "/"
@@ -47,7 +45,6 @@ func CreateLogFile(filepath, filename string) (*os.File, error) {
 
 	logFilename := getLogFilename(filename)
 	fullPath += logFilename
-	log.Info("fullPath: ", fullPath)
 
 	file, err := os.Create(fullPath)
 	if err != nil {
@@ -75,8 +72,6 @@ func (l *LogClient) WriteTestEntry(msg, entryTitle string, timestamp time.Time) 
 		util.GetFormattedTimestamp(util.LoggerTimestampLayout, timestamp),
 		msg)
 
-	log.Info("hello", l.LogFile)
-	log.Info("entry: ", entry)
 	err := l.WriteFile([]byte(entry))
 	if err != nil {
 		log.Errorf("Error while writing Test Entry: %v", err)

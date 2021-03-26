@@ -89,14 +89,14 @@ func (d *DeployClient) DeployTestProfiles(testProfiles []config.TestProfile) {
 }
 
 func (d *DeployClient) TestProfile(testProfile *config.TestProfile) {
-	log.Infof("Starting to test %s...", testProfile.Name)
+	log.Infof("Starting to test [%s]...", testProfile.Name)
 
 	testStartTimestamp := time.Now()
 	d.Logger.WriteTestEntry("Started to test.", testProfile.Name, testStartTimestamp)
 	d.Logger.WriteNewLine()
 
 	for _, node := range testProfile.Nodes {
-		log.Infof("Starting to deploy on %s node", node.Name)
+		log.Infof("Starting to deploy on [%s] node...", node.Name)
 		d.testNode(&node)
 	}
 
@@ -109,7 +109,6 @@ func (d *DeployClient) TestProfile(testProfile *config.TestProfile) {
 		time.Now(),
 	)
 	d.Logger.WriteTestEntrySeperator()
-
 }
 
 func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {

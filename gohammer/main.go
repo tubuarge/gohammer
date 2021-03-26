@@ -64,15 +64,7 @@ func init() {
 	}
 
 	app.After = func(c *cli.Context) error {
-		if loggerClient.LogFile != nil {
-			err := loggerClient.WriteTestResults()
-			if err != nil {
-				log.Errorf("Error while writing to log file: %v", err)
-			}
-
-			defer loggerClient.CloseFile()
-		}
-
+		loggerClient.LogFile.Close()
 		log.Info("Exiting GoHammer.")
 		return nil
 	}
@@ -89,7 +81,8 @@ func gohammer(ctx *cli.Context) error {
 		return errors.New("Please, enter a test-profile file: --testprofilefile <file.json>")
 	}
 
-	loggerClient, err := checkTestLogDirNameFlag(testLogDirName)
+	var err error
+	loggerClient, err = checkTestLogDirNameFlag(testLogDirName)
 	if err != nil {
 		log.Errorf("Error while creating logger client: %v", err)
 	}
@@ -116,16 +109,13 @@ func checkTestLogDirNameFlag(testLogDirName string) (*logger.LogClient, error) {
 		if err != nil {
 			return nil, err
 		}
-		return logger.NewLogClient(logDirFile), nil
 	} else {
 		logDirFile, err = logger.CreateLogFile(testLogDirName, TestResultFilename)
 		if err != nil {
 			return nil, err
 		}
-		return logger.NewLogClient(logDirFile), nil
 	}
-	//loggerClient = logger.NewLogClient(logDirFile)
-	//log.Info("logDirFile: ", loggerClient.LogFile)
+	return logger.NewLogClient(logDirFile), nil
 }
 
 func startTest(testProfiles []config.TestProfile) {
