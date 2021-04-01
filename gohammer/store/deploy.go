@@ -180,6 +180,7 @@ func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
 		)
 
 		elapsedTime := time.Since(testStartTimestamp)
+		d.Logger.TestResult.OverallExecutionTime += elapsedTime
 		d.Logger.WriteTestEntry(
 			fmt.Sprintf("Elapsed test run time: %s", elapsedTime),
 			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),

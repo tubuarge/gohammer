@@ -97,7 +97,7 @@ func (l *LogClient) WriteTestEntry(msg, entryTitle string, timestamp time.Time, 
 }
 
 func (l *LogClient) WriteTestResults() error {
-	strData := fmt.Sprintf("Test Started At: %v\n"+
+	strData := fmt.Sprintf("\t\tTest Started At: %v\n"+
 		"\t\tTest Ended At: %v\n"+
 		"\t\tTotal Test Execution Time: %v\n"+
 		"\t\tTotal Transaction Count: %d\n",

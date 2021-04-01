@@ -64,7 +64,13 @@ func init() {
 	}
 
 	app.After = func(c *cli.Context) error {
-		loggerClient.LogFile.Close()
+		if loggerClient.LogFile != nil {
+			err := loggerClient.WriteTestResults()
+			if err != nil {
+				log.Errorf("Error while writing to test log file: %v", err)
+			}
+			loggerClient.LogFile.Close()
+		}
 		log.Info("Exiting GoHammer.")
 		return nil
 	}
