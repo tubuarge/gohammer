@@ -24,6 +24,9 @@ type TestProfile struct {
 	// This concurrent option is related with just the given test profile,
 	// not all test profile.
 	Concurrent bool `json:"concurrent`
+
+	//TODO: change key
+	RoundRobin bool `json:"roundRobin"`
 }
 
 type NodeConfig struct {

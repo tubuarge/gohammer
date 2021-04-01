@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/Workiva/go-datastructures/queue"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -16,6 +17,8 @@ import (
 	"github.com/tubuarge/GoHammer/logger"
 	"github.com/tubuarge/GoHammer/util"
 )
+
+var deployQueue *queue.Queue
 
 type DeployClient struct {
 	Logger *logger.LogClient
@@ -78,6 +81,10 @@ func (d *DeployClient) DeployTestProfiles(testProfiles []config.TestProfile) {
 	}
 
 	for _, profile := range testProfiles {
+		if profile.RoundRobin == true {
+			d.TestProfileRR(&profile)
+			continue
+		}
 		d.TestProfile(&profile)
 	}
 
@@ -119,6 +126,29 @@ func (d *DeployClient) TestProfile(testProfile *config.TestProfile) {
 		time.Now(),
 		logger.SeperatorProfile,
 	)
+}
+
+func (d *DeployClient) TestProfileRR(testProfile *config.TestProfile) {
+	node := testProfile.Nodes[0]
+
+	for _, deployCount := range node.DeployCounts {
+		for j := 0; j <= deployCount; j++ {
+			for i := 0; i <= len(testProfile.Nodes)-1; i++ {
+				d.testNodeRR(&testProfile.Nodes[i])
+			}
+		}
+	}
+}
+
+func (d *DeployClient) testNodeRR(nodeConfig *config.NodeConfig) {
+	conn, err := createConn(nodeConfig.URL)
+	if err != nil {
+		log.Fatalf("Error while creating ETH Client Connection: %v", err)
+	}
+
+	deployContract(conn, nodeConfig.Cipher)
+
+	log.Infof("[%s] deployed on.", nodeConfig.Name)
 }
 
 func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
