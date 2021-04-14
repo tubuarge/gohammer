@@ -72,6 +72,85 @@ func deployContract(conn *ethclient.Client, nodeCipher string) {
 	_ = instance
 }
 
+// getStoreInstance returns a Store Instance deployed on the given client.
+func (d *DeployClient) getStoreInstance(conn *ethclient.Client, nodeCipher string) (*Store, error) {
+	privateKey, err := crypto.HexToECDSA(nodeCipher)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return nil, fmt.Errorf("Error while casting public key to ECDSA")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+
+	nonce, err := conn.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return nil, err
+	}
+	gasPrice, err := conn.SuggestGasPrice(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth := bind.NewKeyedTransactor(privateKey)
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)     // in wei
+	auth.GasLimit = uint64(300000) // in units
+	auth.GasPrice = gasPrice
+
+	input := "1.0"
+	//address, tx, instance, err := DeployStore(auth, conn, input)
+	_, _, instance, err := DeployStore(auth, conn, input)
+	if err != nil {
+		return nil, err
+	}
+
+	d.Logger.TestResult.TotalTxCount += 1
+	return instance, nil
+}
+
+// callSetItem calls the deployed smart contracts SetItem method.
+func (d *DeployClient) callSetItem(storeInst *Store, conn *ethclient.Client, nodeCipher string) error {
+	privateKey, err := crypto.HexToECDSA(nodeCipher)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		return fmt.Errorf("Error while casting public key to ECDSA")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+
+	nonce, err := conn.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return err
+	}
+	gasPrice, err := conn.SuggestGasPrice(context.Background())
+	if err != nil {
+		return err
+	}
+
+	auth := bind.NewKeyedTransactor(privateKey)
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)     // in wei
+	auth.GasLimit = uint64(300000) // in units
+	auth.GasPrice = gasPrice
+
+	_, err = storeInst.StoreTransactor.SetItem(auth, [32]byte{1}, [32]byte{2})
+	if err != nil {
+		return err
+	}
+	d.Logger.TestResult.TotalTxCount += 1
+	return nil
+}
+
 func (d *DeployClient) DeployTestProfiles(testProfiles []config.TestProfile) {
 	testStartTimestamp := time.Now()
 
@@ -109,6 +188,9 @@ func (d *DeployClient) TestProfile(testProfile *config.TestProfile) {
 
 	for _, node := range testProfile.Nodes {
 		log.Infof("Starting to deploy on [%s] node...", node.Name)
+		if testProfile.CallContractMethod {
+			d.testNodeCallMethod(&node)
+		}
 		d.testNode(&node)
 	}
 
@@ -132,7 +214,16 @@ func (d *DeployClient) TestProfileRR(testProfile *config.TestProfile) {
 	node := testProfile.Nodes[0]
 
 	for _, deployCount := range node.DeployCounts {
-		for j := 0; j <= deployCount; j++ {
+		testStartTimestamp := time.Now()
+
+		d.Logger.WriteTestEntry(
+			"Started to test.",
+			fmt.Sprintf("%d", deployCount),
+			testStartTimestamp,
+			logger.SeperatorNone,
+		)
+
+		for j := 0; j < deployCount; j++ {
 			for i := 0; i <= len(testProfile.Nodes)-1; i++ {
 				d.testNodeRR(&testProfile.Nodes[i])
 			}
@@ -169,6 +260,57 @@ func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
 		for i := 0; i < deployCount; i++ {
 			deployContract(conn, nodeConfig.Cipher)
 			d.Logger.TestResult.TotalTxCount++
+		}
+
+		log.Infof("Deployed %d transaction on the given node.", deployCount)
+		d.Logger.WriteTestEntry(
+			"Ended test.",
+			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
+			time.Now(),
+			logger.SeperatorNone,
+		)
+
+		elapsedTime := time.Since(testStartTimestamp)
+		d.Logger.TestResult.OverallExecutionTime += elapsedTime
+		d.Logger.WriteTestEntry(
+			fmt.Sprintf("Elapsed test run time: %s", elapsedTime),
+			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
+			time.Now(),
+			logger.SeperatorNewLine,
+		)
+
+		duration, err := util.ParseDuration(nodeConfig.DeployInterval)
+		if err != nil {
+			log.Errorf("Error while parsing deploy intervar: %v", err)
+		}
+		time.Sleep(duration)
+	}
+}
+
+func (d *DeployClient) testNodeCallMethod(nodeConfig *config.NodeConfig) {
+	conn, err := createConn(nodeConfig.URL)
+	if err != nil {
+		log.Fatalf("Error while creating ETH Client Connection: %v", err)
+	}
+
+	storeInst, err := d.getStoreInstance(conn, nodeConfig.Cipher)
+	if err != nil {
+		log.Fatalf("Error while creating Store Instance: %v", err)
+	}
+
+	for _, deployCount := range nodeConfig.DeployCounts {
+		testStartTimestamp := time.Now()
+		d.Logger.WriteTestEntry(
+			"Started to test.",
+			fmt.Sprintf("%s - %d", nodeConfig.Name, deployCount),
+			testStartTimestamp,
+			logger.SeperatorNone,
+		)
+
+		for i := 0; i < deployCount; i++ {
+			log.Info("Calling SetItem method")
+			d.callSetItem(storeInst, conn, nodeConfig.Cipher)
+			//d.deployContract(conn, nodeConfig.Cipher)
 		}
 
 		log.Infof("Deployed %d transaction on the given node.", deployCount)

@@ -25,8 +25,12 @@ type TestProfile struct {
 	// not all test profile.
 	Concurrent bool `json:"concurrent`
 
-	//TODO: change key
+	// TODO: change key
 	RoundRobin bool `json:"roundRobin"`
+
+	// if CallContractMethod is true, gohammer calls setItem function from
+	// smart constract instead of deploying contract.
+	CallContractMethod bool `json:"callContractMethod"`
 }
 
 type NodeConfig struct {
