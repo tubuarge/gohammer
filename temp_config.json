@@ -1,0 +1,35 @@
+{
+	"concurrent": false,
+	"profiles": [
+		{
+			"name": "Profile Default",
+			"concurrent": false,
+			"roundRobin": false,
+			"callContractMethod": true,
+			"nodes": [
+				{
+					"name": "Node 2",
+					"url": "http://127.0.0.1:22001",
+					"cipher": "cipherText <qdata/ddx/keystore/key>",
+					"deployCounts": [
+						10,
+						20,
+						30
+					],
+					"deployInterval": "5s"
+				},
+				{
+					"name": "Node 3",
+					"url": "http://127.0.0.1:22002",
+					"cipher": "cipherText <qdata/ddx/keystore/key>",
+					"deployCounts": [
+						10,
+						20,
+						30
+					],
+					"deployInterval": "5s"
+				}
+			]
+		}
+	]
+}
