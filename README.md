@@ -10,7 +10,7 @@ GoHammer deploys number of transactions on the given nodes according to configur
 ## Installation
 ```bash
 git clone https://github.com/tubuarge/gohammer
-cd gohammer
+cd gohammer/gohammer
 go build
 ```
 
