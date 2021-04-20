@@ -211,6 +211,12 @@ func (d *DeployClient) TestProfile(testProfile *config.TestProfile) {
 }
 
 func (d *DeployClient) TestProfileRR(testProfile *config.TestProfile) {
+	var callMethodRRStructList []*callMethodRRStruct
+
+	if testProfile.CallContractMethod {
+		callMethodRRStructList = d.getCallMethodRRStructList(testProfile)
+	}
+
 	node := testProfile.Nodes[0]
 
 	for _, deployCount := range node.DeployCounts {
@@ -225,6 +231,10 @@ func (d *DeployClient) TestProfileRR(testProfile *config.TestProfile) {
 
 		for j := 0; j < deployCount; j++ {
 			for i := 0; i <= len(testProfile.Nodes)-1; i++ {
+				if testProfile.CallContractMethod {
+					d.testNodeRRCallMethod(callMethodRRStructList[i])
+					continue
+				}
 				d.testNodeRR(&testProfile.Nodes[i])
 			}
 		}
@@ -240,6 +250,12 @@ func (d *DeployClient) testNodeRR(nodeConfig *config.NodeConfig) {
 	deployContract(conn, nodeConfig.Cipher)
 
 	log.Infof("[%s] deployed on.", nodeConfig.Name)
+}
+
+// testNodeRRCallMethod is wrapper function that used when running Round Robin and
+// callMethod test profile.
+func (d *DeployClient) testNodeRRCallMethod(callMethodRRStruct *callMethodRRStruct) {
+	d.callSetItem(callMethodRRStruct.storeInst, callMethodRRStruct.ethClient, callMethodRRStruct.nodeCipher)
 }
 
 func (d *DeployClient) testNode(nodeConfig *config.NodeConfig) {
@@ -336,6 +352,48 @@ func (d *DeployClient) testNodeCallMethod(nodeConfig *config.NodeConfig) {
 		}
 		time.Sleep(duration)
 	}
+}
+
+// callMethodRRStruct contains information for calling callSetItem
+type callMethodRRStruct struct {
+	ethClient  *ethclient.Client
+	storeInst  *Store
+	nodeCipher string
+}
+
+// getCallMethodRRStructList returns a list of callMethodRRStruct struct that contains
+// required values to call callSetItem function.
+// if there is a problem occured while creating ethclient or store instance,
+// terminates the program.
+func (d *DeployClient) getCallMethodRRStructList(testProfile *config.TestProfile) []*callMethodRRStruct {
+	var callMethodRRStructList []*callMethodRRStruct
+
+	// create connections and store instance for every node in the test profile and
+	// create a callMethoRRStruct, then add this struct to the slice.
+	nodes := testProfile.Nodes
+	for _, node := range nodes {
+		conn, err := createConn(node.URL)
+		if err != nil {
+			log.Fatalf("Error while creating ETH Client Connection: %v", err)
+			return nil
+		}
+
+		storeInst, err := d.getStoreInstance(conn, node.Cipher)
+		if err != nil {
+			log.Fatalf("Error while creating Store Instance: %v", err)
+			return nil
+		}
+
+		structInst := &callMethodRRStruct{
+			ethClient:  conn,
+			storeInst:  storeInst,
+			nodeCipher: node.Cipher,
+		}
+
+		callMethodRRStructList = append(callMethodRRStructList, structInst)
+	}
+
+	return callMethodRRStructList
 }
 
 func createConn(nodeUrl string) (*ethclient.Client, error) {
