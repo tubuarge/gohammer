@@ -73,11 +73,15 @@ Before running `gohammer` make sure every node in the given configuration file i
 Start TPS-Monitor tool on background.
 ```bash 
 cd gohammer/monitoring
+```
+```bash
 docker-compose up -d
+```
+```bash
 screen -mSL ./tps-monitor --httpendpoint http://localhost:22000 --consensus raft --influxdb --influxdb.token "grafana:grafana" --influxdb.bucket "metrics"
 ```
 
-After starting tps-monitor you can access Grafana from your browser with this URL `http://localhost:3000` with `username: admin` and `password: admin`.
+After starting `tps-monitor` you can access Grafana UI from your browser with this URL `http://localhost:3000` with `username: admin` and `password: admin`.
 
 ```bash
 cd gohammer/gohammer
