@@ -17,9 +17,11 @@ go build
 ## Usage
 Before running `gohammer` make sure every node in the given configuration file is running.
 
-Start TPS-Monitor tool.
+Start TPS-Monitor tool on background.
 ```bash 
 cd monitoring
+docker volume create --name=grafana-volume
+docker volume create --name=influxdb-volume
 docker-compose up -d
 cd ../tps-monitor
 go build 
