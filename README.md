@@ -1,16 +1,69 @@
 # GoHammer
-GoHammer is a test tool designed to get performance metrics (TPS) of the nodes and operationg system by deploying a smart contract and calling smart contract's methods. <br /> GoHammer provides configurable test profiles created by the user and easy execution of these test profiles. GoHammer inspired by [Chainhammer](https://github.com/drandreaskrueger/chainhammer) and [Quorum Profiling](https://github.com/ConsenSys/quorum-profiling) <br />
+GoHammer is a test tool designed to get performance metrics (TPS) of the nodes and operationg system by deploying a smart contract and calling smart contract's methods. <br /> GoHammer provides configurable test profiles created by the user and easy execution of these test profiles. GoHammer inspired by [Chainhammer](https://github.com/drandreaskrueger/chainhammer) and [Quorum Profiling](https://github.com/ConsenSys/quorum-profiling). TIG (Telegraf, InfluxDB, Grafana) stack taken from [alekece/tig-stack](https://github.com/alekece/tig-stack) <br />
 
 GoHammer deploys number of transactions on the given nodes according to configuration file (config.json) then tps-monitoring tool collects TPS and node metrics and visualizes these data on Grafana (if you want to see node metrics gohammer has to be run on that node, if you are testing a remote node you can't get OS related metrics about these node.)
 
 ## Requirements
 * Docker CLI
+* Docker-compose
 * Go Version 1.15.6
 
 ## Installation
+
+### Docker
+```bash
+sudo apt-get update
+```
+
+```bash
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+```
+
+```bash
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+```
+
+```bash
+echo \
+  "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+```bash
+sudo apt-get update
+```
+```bash
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+
+### Docker-compose
+```bash
+sudo curl -L https://github.com/docker/compose/releases/download/1.21.2/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+```
+```bash
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+### TPS-Monitor
+```bash
+cd gohammer/tps-monitor
+```
+```bash
+go build
+```
+
+### GoHammer
 ```bash
 git clone https://github.com/tubuarge/gohammer
+```
+```bash
 cd gohammer/gohammer
+```
+```bash
 go build
 ```
 
@@ -19,16 +72,16 @@ Before running `gohammer` make sure every node in the given configuration file i
 
 Start TPS-Monitor tool on background.
 ```bash 
-cd monitoring
-docker volume create --name=grafana-volume
-docker volume create --name=influxdb-volume
+cd gohammer/monitoring
 docker-compose up -d
-cd ../tps-monitor
-go build 
-./tps-monitor --httpendpoint http://localhost:22000 --consensus raft --influxdb --influxdb.token admin:admin
+screen -mSL ./tps-monitor --httpendpoint http://localhost:22000 --consensus raft --influxdb --influxdb.token "grafana:grafana" --influxdb.bucket "metrics"
 ```
+
 After starting tps-monitor you can access Grafana from your browser with this URL `http://localhost:3000` with `username: admin` and `password: admin`.
 
+```bash
+cd gohammer/gohammer
+```
 ```bash
 ./gohammer --testprofilefile ../config.json --logdir /home/test/logs
 ```
