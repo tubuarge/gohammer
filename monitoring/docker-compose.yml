@@ -1,32 +1,52 @@
-version: "2"
-services:
-  grafana:
-    image: grafana/grafana
-    container_name: grafana
-    restart: always
-    ports:
-      - 3000:3000
-    networks:
-      - monitoring
-    volumes:
-      - grafana-volume:/var/lib/grafana
+version: "3"
 
-  influxdb:
-    image: influxdb
-    container_name: influxdb
-    restart: always
-    ports:
-      - 8086:8086
-    networks:
-      - monitoring
-    volumes:
-      - influxdb-volume:/var/lib/influxdb
+services:
+    influxdb:
+        build: ./influxdb
+        container_name: influxdb
+        ports:
+            - ${INFLUXDB_PORT}:${INFLUXDB_PORT}
+        volumes:
+            - /var/lib/influxdb:/var/lib/influxdb
+        restart: always
+        env_file:
+            - .env
+        networks:
+            - backend
+            - frontend
+
+    telegraf:
+        build: ./telegraf
+        container_name: telegraf
+        links:
+            - influxdb
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /proc:/hostfs/proc
+        privileged: true
+        restart: always
+        env_file:
+            - .env
+        networks: 
+            - backend
+            
+    grafana:
+        build: ./grafana
+        container_name: grafana
+        ports: 
+            - ${GRAFANA_PORT}:${GRAFANA_PORT}
+        links:
+            - influxdb
+        volumes:
+            - /var/lib/grafana
+            - /var/log/grafana
+            - /var/lib/grafana/plugins
+        restart: always
+        env_file:
+            - .env
+        networks:
+            - frontend
 
 networks:
-  monitoring:
-
-volumes:
-  grafana-volume:
-    external: true
-  influxdb-volume:
-    external: true
+    backend:
+    frontend:
