@@ -1,5 +1,5 @@
 # GoHammer
-GoHammer is a test tool designed to get performance metrics (TPS) of the nodes and operationg system by deploying a smart contract and calling smart contract's methods. <br /> GoHammer provides configurable test profiles created by the user and easy execution of these test profiles. GoHammer inspired by [Chainhammer](https://github.com/drandreaskrueger/chainhammer) and [Quorum Profiling](https://github.com/ConsenSys/quorum-profiling). TIG (Telegraf, InfluxDB, Grafana) stack taken from [alekece/tig-stack](https://github.com/alekece/tig-stack) <br />
+GoHammer is a test tool designed to get performance metrics (TPS) of the nodes and operationg system by deploying a smart contract and calling smart contract's methods. <br /> GoHammer provides configurable test profiles created by the user and easy execution of these test profiles. GoHammer inspired by [Chainhammer](https://github.com/drandreaskrueger/chainhammer) and [Quorum Profiling](https://github.com/ConsenSys/quorum-profiling). TIG (Telegraf, InfluxDB, Grafana) stack taken from [alekece/tig-stack](https://github.com/alekece/tig-stack). <br />
 
 GoHammer deploys number of transactions on the given nodes according to configuration file (config.json) then tps-monitoring tool collects TPS and node metrics and visualizes these data on Grafana (if you want to see node metrics gohammer has to be run on that node, if you are testing a remote node you can't get OS related metrics about these node.)
 
@@ -50,6 +50,9 @@ sudo chmod +x /usr/local/bin/docker-compose
 
 ### TPS-Monitor
 ```bash
+git clone https://github.com/tubuarge/gohammer
+```
+```bash
 cd gohammer/tps-monitor
 ```
 ```bash
@@ -58,9 +61,6 @@ go build
 
 ### GoHammer
 ```bash
-git clone https://github.com/tubuarge/gohammer
-```
-```bash
 cd gohammer/gohammer
 ```
 ```bash
@@ -68,7 +68,7 @@ go build
 ```
 
 ## Usage
-Before running `gohammer` make sure every node in the given configuration file is running.
+Before running `gohammer` make sure every node in the given test profile config file is running.
 
 Start TPS-Monitor tool on background.
 ```bash 
