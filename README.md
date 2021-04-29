@@ -80,6 +80,7 @@ docker-compose up -d
 ```bash
 screen -mSL tps-monitor ./tps-monitor --httpendpoint http://localhost:22000 --consensus raft --influxdb --influxdb.token "grafana:grafana" --influxdb.bucket "metrics"
 ```
+Note About Screen: Screen is a full-screen window manager that multiplexes a physical terminal between several processes. We use it to run tps-monitor on the background, after executing above command, you will see tps-monitor screen. You can deattach this screen by pressing `CTRL + a + d` key combination on your keyboard. If you want to go back to deattached screen type `screen -r tps-monitor` to terminal. If you want to close the screen simply type `CTRL + c`. For more information about Screen refer to this [document](https://www.gnu.org/software/screen/manual/screen.html).
 
 After starting `tps-monitor` you can access Grafana UI from your browser with this URL `http://localhost:3000` with `username: admin` and `password: admin`.
 
