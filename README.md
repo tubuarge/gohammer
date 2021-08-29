@@ -3,6 +3,8 @@ GoHammer is a test tool designed to get performance metrics (TPS) of the nodes a
 
 GoHammer deploys number of transactions on the given nodes according to configuration file (config.json) then tps-monitoring tool collects TPS and node metrics and visualizes these data on Grafana (if you want to see node metrics gohammer has to be run on that node, if you are testing a remote node you can't get OS related metrics about these node.)
 
+[GoHammer's published paper](https://dergipark.org.tr/en/pub/ject/issue/64442/980118).
+
 ## Requirements
 * Docker CLI
 * Docker-compose
