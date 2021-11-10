@@ -90,7 +90,7 @@ After starting `tps-monitor` you can access Grafana UI from your browser with th
 cd gohammer/gohammer
 ```
 ```bash
-./gohammer --testprofilefile ../config.json --logdir /home/test/logs
+./GoHammer --testprofilefile ../temp_config.json --logdir ~/test
 ```
 When the test finished you can find your test's log under file named `<logdirPath>YYYY_MM_DD HH_MM_result.log`.
 
